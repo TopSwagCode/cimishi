@@ -74,20 +74,13 @@ impl OutputWriter for JsonWriter {
                     let s_esc = s.replace('\\', "\\\\").replace('"', "\\\"");
                     let p_esc = p.replace('\\', "\\\\").replace('"', "\\\"");
                     let o_esc = o.replace('\\', "\\\\").replace('"', "\\\"");
+                    let comma = if i < triples.len() - 1 { "," } else { "" };
 
-                    if i < triples.len() - 1 {
-                        writeln!(
-                            file,
-                            "    {{\"subject\": \"{}\", \"predicate\": \"{}\", \"object\": \"{}\"}}",
-                            s_esc, p_esc, o_esc
-                        )?;
-                    } else {
-                        writeln!(
-                            file,
-                            "    {{\"subject\": \"{}\", \"predicate\": \"{}\", \"object\": \"{}\"}}",
-                            s_esc, p_esc, o_esc
-                        )?;
-                    }
+                    writeln!(
+                        file,
+                        "    {{\"subject\": \"{}\", \"predicate\": \"{}\", \"object\": \"{}\"}}{}",
+                        s_esc, p_esc, o_esc, comma
+                    )?;
                 }
 
                 writeln!(file, "  ],")?;

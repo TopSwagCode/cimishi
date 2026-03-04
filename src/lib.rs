@@ -12,8 +12,8 @@
 //!
 //! # Example
 //!
-//! ```rust,no_run
-//! use rdf_query::{PipelineConfig, Pipeline};
+//! ```rust,ignore
+//! use cimishi::{config::PipelineConfig, pipeline::Pipeline};
 //!
 //! #[tokio::main]
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {

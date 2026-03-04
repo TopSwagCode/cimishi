@@ -43,7 +43,7 @@ impl PipelineConfig {
         match extension.as_str() {
             "yaml" | "yml" => Self::from_yaml(&content),
             "json" => Self::from_json(&content),
-            "toml" | _ => Self::from_toml(&content),
+            _ => Self::from_toml(&content),
         }
     }
 
@@ -65,8 +65,8 @@ impl PipelineConfig {
         Ok(config)
     }
 
-    /// Alias for from_toml for backwards compatibility.
-    pub fn from_str(content: &str) -> Result<Self> {
+    /// Parse configuration from a TOML string (alias for from_toml).
+    pub fn parse(content: &str) -> Result<Self> {
         Self::from_toml(content)
     }
 }
@@ -382,7 +382,7 @@ formats = ["csv", "json"]
 metadata = true
 "#;
 
-        let config = PipelineConfig::from_str(config_str).unwrap();
+        let config = PipelineConfig::parse(config_str).unwrap();
         assert_eq!(config.pipeline.name, "test-pipeline");
         assert!(config.pipeline.parallel);
         assert_eq!(config.sources.len(), 1);

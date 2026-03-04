@@ -84,6 +84,7 @@ pub trait QueryEngine: Send + Sync {
 
 /// SPARQL query engine using Oxigraph.
 pub struct SparqlEngine {
+    #[allow(dead_code)] // Reserved for future use with named graphs
     base_iri: String,
 }
 
@@ -189,7 +190,7 @@ impl QueryEngine for SparqlEngine {
                         .map(|var| {
                             solution
                                 .get(var.as_str())
-                                .map(|term| format_term(term))
+                                .map(format_term)
                                 .unwrap_or_default()
                         })
                         .collect();
