@@ -1,0 +1,80 @@
+# =============================================================================
+# RDF Query Pipeline - Docker Compose Configuration
+# =============================================================================
+# This file configures the RDF query pipeline container.
+# 
+# Quick start:
+#   1. Put your RDF/XML files in ./examples/data/
+#   2. Choose a config format below (JSON, YAML, or TOML)
+#   3. Run: docker compose up
+#   4. Results appear in ./output/
+# =============================================================================
+
+services:
+  cimishi:
+    build: .
+    platform: linux/arm64
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # COMMAND - Choose ONE config format (uncomment the one you want)
+    # ─────────────────────────────────────────────────────────────────────────
+    
+    # JSON config (currently active)
+    command: ["--config", "/app/pipeline.json"]
+    
+    # YAML config
+    # command: ["--config", "/app/pipeline.yaml"]
+    
+    # TOML config
+    # command: ["--config", "/app/pipeline.toml"]
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # VOLUMES - Data directories and config files
+    # ─────────────────────────────────────────────────────────────────────────
+    volumes:
+      # Input/Output directories (always needed)
+      - ./examples/data:/app/examples/data:ro       # Your RDF/XML/ZIP files go here
+      - ./examples/queries:/app/examples/queries:ro  # SPARQL query files
+      - ./output:/app/output                         # Query results are written here
+
+      # ── Config Files ──────────────────────────────────────────────────────
+      # Choose ONE config file that matches your command above
+      
+      # JSON configs
+      - ./examples/configs/pipeline-zip.json:/app/pipeline.json:ro    # With ZIP extraction (active)
+      # - ./examples/configs/pipeline.json:/app/pipeline.json:ro      # Basic JSON config
+
+      # YAML configs
+      # - ./examples/configs/pipeline.yaml:/app/pipeline.yaml:ro      # Basic YAML config
+
+      # TOML configs
+      # - ./examples/configs/pipeline.toml:/app/pipeline.toml:ro      # Basic TOML config
+      # - ./examples/configs/explicit-files.toml:/app/pipeline.toml:ro # Explicit file list
+
+      # ── Custom Queries ────────────────────────────────────────────────────
+      # Mount additional query files if needed
+      # - ./examples/queries:/queries:ro
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # ENVIRONMENT - Cloud provider credentials (uncomment if using cloud storage)
+    # ─────────────────────────────────────────────────────────────────────────
+    # environment:
+      # ── AWS S3 ────────────────────────────────────────────────────────────
+      # Required for S3 sources. Set these in your shell or .env file.
+      # - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      # - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      # - AWS_REGION=${AWS_REGION:-us-east-1}
+      # - AWS_ENDPOINT_URL=${AWS_ENDPOINT_URL}           # For MinIO or custom S3
+
+      # ── Azure Blob Storage ────────────────────────────────────────────────
+      # Required for Azure sources. Set these in your shell or .env file.
+      # - AZURE_STORAGE_ACCOUNT_NAME=${AZURE_STORAGE_ACCOUNT_NAME}
+      # - AZURE_STORAGE_ACCOUNT_KEY=${AZURE_STORAGE_ACCOUNT_KEY}
+
+      # ── Google Cloud Storage ──────────────────────────────────────────────
+      # Required for GCS sources. Mount the key file and set the path.
+      # - GOOGLE_APPLICATION_CREDENTIALS=/app/gcp-key.json
+    
+    # ── GCS Key File Mount ──────────────────────────────────────────────────
+    # Uncomment and add to volumes if using GCS:
+    # - ./path/to/your/gcp-service-account.json:/app/gcp-key.json:ro

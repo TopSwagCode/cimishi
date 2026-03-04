@@ -1,0 +1,23 @@
+[pipeline]
+name = "test-s3"
+
+[[sources]]
+type = "s3"
+bucket = "test-bucket"
+region = "us-east-1"
+endpoint = "http://minio:9000"
+patterns = ["*.xml"]
+
+[query]
+inline = """
+PREFIX cim: <http://iec.ch/TC57/CIM100#>
+SELECT ?name WHERE {
+  ?sub a cim:Substation ;
+       cim:IdentifiedObject.name ?name .
+}
+ORDER BY ?name
+"""
+
+[output]
+dir = "/output"
+formats = ["csv"]

@@ -1,0 +1,102 @@
+# RDF Query Pipeline Configuration - Explicit File List
+# This config fetches specific files by their hardcoded paths instead of scanning directories.
+
+[pipeline]
+name = "cim-igm-explicit-files"
+parallel = true
+max_concurrent = 10
+
+# =============================================================================
+# SOURCES - Explicit list of all files from examples/data
+# =============================================================================
+
+[[sources]]
+type = "local"
+files = [
+    # Boundary data
+    "./examples/data/20230828T0000Z__ENTSOE_EQBD_001.xml",
+    "./examples/data/20230828T0000Z__ENTSOE_TPBD_001.xml",
+    
+    # Equipment (EQ) files
+    "./examples/data/20260215T2300Z__DKCO_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKE_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKKO_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKKS_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKSB_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKSK_EQ_001.xml",
+    "./examples/data/20260215T2300Z__DKW_EQ_001.xml",
+    
+    # DKCO - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKCO_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKCO_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKCO_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKCO_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKCO_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKCO_TP_002.xml",
+    
+    # DKE - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKE_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKE_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKE_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKE_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKE_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKE_TP_002.xml",
+    
+    # DKKO - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKKO_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKO_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKKO_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKO_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKKO_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKO_TP_002.xml",
+    
+    # DKKS - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKKS_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKS_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKKS_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKS_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKKS_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKKS_TP_002.xml",
+    
+    # DKSB - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKSB_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSB_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKSB_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSB_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKSB_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSB_TP_002.xml",
+    
+    # DKSK - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKSK_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSK_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKSK_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSK_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKSK_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKSK_TP_002.xml",
+    
+    # DKW - Steady State Hypothesis (SSH), State Variables (SV), Topology (TP)
+    "./examples/data/20260219T2230Z_2D_DKW_SSH_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKW_SSH_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKW_SV_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKW_SV_002.xml",
+    "./examples/data/20260219T2230Z_2D_DKW_TP_001.xml",
+    "./examples/data/20260219T2230Z_2D_DKW_TP_002.xml",
+]
+
+# =============================================================================
+# QUERY - SPARQL query configuration
+# =============================================================================
+
+[query]
+file = "./examples/queries/query.sparql"
+base_iri = "http://example.org/"
+
+# =============================================================================
+# OUTPUT - Where and how to write results
+# =============================================================================
+
+[output]
+dir = "./output"
+formats = ["csv"]
+metadata = true
+prefix = "results_explicit"

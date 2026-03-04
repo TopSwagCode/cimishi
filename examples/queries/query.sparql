@@ -1,0 +1,42 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX cim:  <http://iec.ch/TC57/2013/CIM-schema-cim16#>
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+
+SELECT
+  ?substation
+  ?substationName
+  ?subGeoRegionName
+  ?geoRegionName
+  (COUNT(DISTINCT ?vl) AS ?voltageLevelCount)
+  (MAX(?nominalKV) AS ?maxNominalKV)
+WHERE {
+  ?substation a cim:Substation .
+
+  OPTIONAL { ?substation cim:IdentifiedObject.name ?substationName . }
+
+  # Region hierarchy: Substation -> SubGeographicalRegion -> GeographicalRegion
+  OPTIONAL {
+    ?substation cim:Substation.Region ?subGeoRegion .
+    OPTIONAL { ?subGeoRegion cim:IdentifiedObject.name ?subGeoRegionName . }
+
+    OPTIONAL {
+      ?subGeoRegion cim:SubGeographicalRegion.Region ?geoRegion .
+      OPTIONAL { ?geoRegion cim:IdentifiedObject.name ?geoRegionName . }
+    }
+  }
+
+  # Voltage levels belonging to the substation
+  OPTIONAL {
+    ?vl a cim:VoltageLevel ;
+        cim:VoltageLevel.Substation ?substation .
+
+    # nominal kV via BaseVoltage
+    OPTIONAL {
+      ?vl cim:VoltageLevel.BaseVoltage ?bv .
+      ?bv cim:BaseVoltage.nominalVoltage ?nominalKV_raw .
+      BIND(xsd:decimal(?nominalKV_raw) AS ?nominalKV)
+    }
+  }
+}
+GROUP BY ?substation ?substationName ?subGeoRegionName ?geoRegionName
+ORDER BY LCASE(STR(?substationName))

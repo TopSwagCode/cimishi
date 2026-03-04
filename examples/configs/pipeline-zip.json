@@ -1,0 +1,37 @@
+{
+  "pipeline": {
+    "name": "cim-igm-query-zip",
+    "parallel": true,
+    "max_concurrent": 10
+  },
+  "sources": [
+    {
+      "type": "local",
+      "path": "./examples/data",
+      "patterns": ["*.xml", "*.rdf", "*.zip", "*.gz"],
+      "recursive": true
+    }
+  ],
+  "processors": [
+    {
+      "type": "unzip",
+      "archive_patterns": ["*.zip"],
+      "gzip_patterns": ["*.gz", "*.gzip"],
+      "patterns": ["*.xml", "*.rdf"]
+    },
+    {
+      "type": "filter",
+      "exclude": ["._*", "__MACOSX/*"]
+    }
+  ],
+  "query": {
+    "file": "./examples/queries/query.sparql",
+    "base_iri": "http://example.org/"
+  },
+  "output": {
+    "dir": "./output",
+    "formats": ["csv", "json"],
+    "metadata": true,
+    "prefix": "results"
+  }
+}

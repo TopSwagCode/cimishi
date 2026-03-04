@@ -1,0 +1,101 @@
+# RDF Query Pipeline Configuration (YAML format)
+# This file configures the data processing pipeline.
+
+pipeline:
+  name: cim-igm-query
+  parallel: true
+  max_concurrent: 10
+
+# =============================================================================
+# SOURCES - Where to fetch data from
+# =============================================================================
+
+sources:
+  # Local filesystem source
+  - type: local
+    path: ./examples/data
+    patterns:
+      - "*.xml"
+      - "*.rdf"
+      - "*.zip"
+      - "*.gz"
+    recursive: true
+
+  # Example: Explicit file list
+  # - type: local
+  #   files:
+  #     - /data/model_EQ.xml
+  #     - /shared/network/topology.rdf
+
+  # Example: S3 source
+  # - type: s3
+  #   bucket: my-cim-data
+  #   prefix: igm/2026/
+  #   region: eu-west-1
+  #   patterns:
+  #     - "*.xml"
+  #     - "*.zip"
+
+  # Example: Azure Blob Storage
+  # - type: azure
+  #   account: mystorageaccount
+  #   container: cim-data
+  #   prefix: igm/
+  #   patterns:
+  #     - "*.xml"
+
+  # Example: Google Cloud Storage
+  # - type: gcs
+  #   bucket: my-gcs-bucket
+  #   prefix: cim/
+  #   patterns:
+  #     - "*.xml"
+
+# =============================================================================
+# PROCESSORS - How to transform the data
+# =============================================================================
+
+processors: []
+  # Decompress processor - extracts ZIP archives and decompresses GZIP files
+  # - type: unzip
+  #   archive_patterns:
+  #     - "*.zip"
+  #   gzip_patterns:
+  #     - "*.gz"
+  #     - "*.gzip"
+  #   patterns:
+  #     - "*.xml"
+  #     - "*.rdf"
+
+  # Filter processor - filter files by pattern
+  # - type: filter
+  #   include:
+  #     - "*_TP_*.xml"
+  #     - "*_SSH_*.xml"
+  #     - "*_SV_*.xml"
+  #     - "*_EQ_*.xml"
+  #   exclude:
+  #     - "*_BD_*.xml"
+
+# =============================================================================
+# QUERY - SPARQL query configuration
+# =============================================================================
+
+query:
+  file: ./examples/queries/query.sparql
+  base_iri: http://example.org/
+  # Or use inline query:
+  # query: |
+  #   PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  #   SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 100
+
+# =============================================================================
+# OUTPUT - Where and how to write results
+# =============================================================================
+
+output:
+  dir: ./output
+  formats:
+    - csv
+  metadata: true
+  prefix: results

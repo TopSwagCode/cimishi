@@ -1,0 +1,161 @@
+# Integration test environment with fake cloud storage services
+# Run with: ./run-tests.sh or docker compose -f tests/docker-compose.test.yml up --build
+
+services:
+  # ─────────────────────────────────────────────────────────────
+  # Fake Cloud Storage Services
+  # ─────────────────────────────────────────────────────────────
+
+  # MinIO - S3-compatible storage
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Azurite - Azure Blob Storage emulator
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --loose --skipApiVersionCheck
+    ports:
+      - "10000:10000"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "10000"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # NOTE: GCS emulator (fake-gcs-server) removed - object_store crate
+  # doesn't support emulator testing without real credentials.
+  # See README.md for details on GCS testing.
+
+  # ─────────────────────────────────────────────────────────────
+  # Test Setup - Upload test data to MinIO
+  # ─────────────────────────────────────────────────────────────
+
+  setup-minio:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./data:/test-data:ro
+    entrypoint: >
+      /bin/sh -c "
+        mc alias set myminio http://minio:9000 minioadmin minioadmin &&
+        mc mb myminio/test-bucket --ignore-existing &&
+        mc cp /test-data/*.xml myminio/test-bucket/ &&
+        mc cp /test-data/*.sparql myminio/test-bucket/ &&
+        echo 'MinIO setup complete'
+      "
+
+  # Setup Azure (using azure-cli)
+  setup-azure:
+    image: mcr.microsoft.com/azure-cli:latest
+    depends_on:
+      azurite:
+        condition: service_started
+    volumes:
+      - ./data:/test-data:ro
+    environment:
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    entrypoint: >
+      /bin/sh -c "
+        sleep 3 &&
+        az storage container create --name test-container 2>/dev/null || true &&
+        for f in /test-data/*.xml /test-data/*.sparql; do
+          [ -f \"$$f\" ] || continue
+          az storage blob upload --container-name test-container --file \"$$f\" --name $$(basename \"$$f\") --overwrite
+        done &&
+        echo 'Azure setup complete'
+      "
+
+  # Setup GCS (using curl)
+  # NOTE: GCS setup removed - see README.md for GCS testing details
+
+  # ─────────────────────────────────────────────────────────────
+  # Test Runners - One for each backend
+  # ─────────────────────────────────────────────────────────────
+
+  # Test local filesystem
+  test-local:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      setup-minio:
+        condition: service_completed_successfully
+    volumes:
+      - ./configs/local.toml:/app/config.toml:ro
+      - ./data:/input:ro
+      - ./output/local:/output
+    command: ["--config", "/app/config.toml"]
+
+  # Test S3 (MinIO)
+  test-s3:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      setup-minio:
+        condition: service_completed_successfully
+    volumes:
+      - ./configs/s3.toml:/app/config.toml:ro
+      - ./output/s3:/output
+    environment:
+      AWS_ACCESS_KEY_ID: minioadmin
+      AWS_SECRET_ACCESS_KEY: minioadmin
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://minio:9000
+      AWS_ALLOW_HTTP: "true"
+    command: ["--config", "/app/config.toml"]
+
+  # Test Azure Blob (Azurite)
+  test-azure:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    depends_on:
+      setup-azure:
+        condition: service_completed_successfully
+    volumes:
+      - ./configs/azure.toml:/app/config.toml:ro
+      - ./output/azure:/output
+    environment:
+      # Azurite credentials and endpoint
+      AZURE_STORAGE_ACCOUNT_NAME: devstoreaccount1
+      AZURE_STORAGE_ACCOUNT_KEY: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+    command: ["--config", "/app/config.toml"]
+
+  # NOTE: GCS test removed - see README.md for GCS testing details
+
+  # ─────────────────────────────────────────────────────────────
+  # Test Validator - Check all outputs
+  # ─────────────────────────────────────────────────────────────
+
+  test-validator:
+    image: alpine:latest
+    depends_on:
+      test-local:
+        condition: service_completed_successfully
+      test-s3:
+        condition: service_completed_successfully
+      test-azure:
+        condition: service_completed_successfully
+      # Note: test-gcs is skipped - object_store GCS adapter doesn't have good
+      # emulator support without real GCP credentials. For GCS integration testing,
+      # consider using the S3 API compatibility mode of fake-gcs-server or testing
+      # against a real GCS bucket with service account credentials.
+    volumes:
+      - ./output:/output:ro
+      - ./scripts:/scripts:ro
+    entrypoint: /scripts/validate-results.sh

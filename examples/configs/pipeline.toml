@@ -1,0 +1,133 @@
+# RDF Query Pipeline Configuration
+# This file configures the data processing pipeline.
+
+[pipeline]
+name = "cim-igm-query"
+parallel = true          # Run sources in parallel
+max_concurrent = 10      # Max concurrent operations
+
+# =============================================================================
+# SOURCES - Where to fetch data from
+# =============================================================================
+
+# Local filesystem source
+[[sources]]
+type = "local"
+path = "./examples/data"
+patterns = ["*.xml", "*.rdf", "*.zip", "*.gz"]
+recursive = true
+
+# Example: Explicit file list (local) - fetch specific files regardless of location
+# [[sources]]
+# type = "local"
+# files = [
+#     "/data/models/network_EQ.xml",
+#     "/shared/archive/model_2026.zip",
+#     "/home/user/cim/topology.rdf"
+# ]
+
+# Example: Combine path + explicit files (fetch from folder AND specific files)
+# [[sources]]
+# type = "local"
+# path = "./examples/data"
+# patterns = ["*.xml"]
+# files = ["/other/location/special_model.xml"]
+
+# Example: S3 source with prefix (uncomment to use)
+# [[sources]]
+# type = "s3"
+# bucket = "my-cim-data"
+# prefix = "igm/2026/"
+# region = "eu-west-1"
+# patterns = ["*.xml", "*.zip"]
+
+# Example: S3 source with explicit files (fetch specific objects)
+# [[sources]]
+# type = "s3"
+# bucket = "my-cim-data"
+# region = "eu-west-1"
+# files = [
+#     "models/2026/03/network_EQ.xml",
+#     "models/2026/03/network_TP.xml",
+#     "archives/full_model.zip"
+# ]
+
+# Example: Azure Blob Storage with prefix (uncomment to use)
+# [[sources]]
+# type = "azure"
+# account = "mystorageaccount"
+# container = "cim-data"
+# prefix = "igm/"
+# patterns = ["*.xml", "*.zip"]
+
+# Example: Azure Blob Storage with explicit files
+# [[sources]]
+# type = "azure"
+# account = "mystorageaccount"
+# container = "cim-data"
+# files = [
+#     "exports/daily/model.xml",
+#     "exports/daily/topology.rdf"
+# ]
+
+# Example: Google Cloud Storage with prefix (uncomment to use)
+# [[sources]]
+# type = "gcs"
+# bucket = "my-gcs-bucket"
+# prefix = "cim/"
+# patterns = ["*.xml"]
+
+# Example: GCS with explicit files
+# [[sources]]
+# type = "gcs"
+# bucket = "my-gcs-bucket"
+# files = [
+#     "data/network_model.xml",
+#     "data/boundary.xml"
+# ]
+
+# =============================================================================
+# PROCESSORS - How to transform the data
+# =============================================================================
+
+# Decompress processor - extracts ZIP archives and decompresses GZIP files
+# All decompression happens in-memory for optimal performance
+# Uncomment if your input contains compressed files
+# [[processors]]
+# type = "unzip"
+# archive_patterns = ["*.zip"]           # ZIP archive patterns to extract
+# gzip_patterns = ["*.gz", "*.gzip"]     # GZIP file patterns to decompress
+# patterns = ["*.xml", "*.rdf"]          # Files to keep after extraction
+
+# Filter processor - filter files by pattern
+# [[processors]]
+# type = "filter"
+# include = ["*_TP_*.xml", "*_SSH_*.xml", "*_SV_*.xml", "*_EQ_*.xml"]
+# exclude = ["*_BD_*.xml"]
+
+# =============================================================================
+# QUERY - SPARQL query configuration
+# =============================================================================
+
+[query]
+# Path to SPARQL query file (optional)
+file = "./examples/queries/query.sparql"
+
+# Or inline query (used if file doesn't exist)
+# query = """
+# PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# SELECT ?s ?p ?o WHERE { ?s ?p ?o } LIMIT 100
+# """
+
+# Base IRI for RDF parsing (relative IRIs are resolved against this)
+base_iri = "http://example.org/"
+
+# =============================================================================
+# OUTPUT - Where and how to write results
+# =============================================================================
+
+[output]
+dir = "./output"
+formats = ["csv"]        # Options: "csv", "json"
+metadata = true          # Write timing/stats metadata file
+prefix = "results"       # Output filename prefix

@@ -1,0 +1,32 @@
+{
+  "$comment": "RDF Query Pipeline Configuration (JSON format)",
+  
+  "pipeline": {
+    "name": "cim-igm-query",
+    "parallel": true,
+    "max_concurrent": 10
+  },
+
+  "sources": [
+    {
+      "type": "local",
+      "path": "./examples/data",
+      "patterns": ["*.xml", "*.rdf", "*.zip", "*.gz"],
+      "recursive": true
+    }
+  ],
+
+  "processors": [],
+
+  "query": {
+    "file": "./examples/queries/query.sparql",
+    "base_iri": "http://example.org/"
+  },
+
+  "output": {
+    "dir": "./output",
+    "formats": ["csv", "json"],
+    "metadata": true,
+    "prefix": "results"
+  }
+}

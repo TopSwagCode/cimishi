@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/CIM100#">
+  <cim:Substation rdf:ID="_sub-001"><cim:IdentifiedObject.name>Test Substation Alpha</cim:IdentifiedObject.name></cim:Substation>
+  <cim:Substation rdf:ID="_sub-002"><cim:IdentifiedObject.name>Test Substation Beta</cim:IdentifiedObject.name></cim:Substation>
+  <cim:Substation rdf:ID="_sub-003"><cim:IdentifiedObject.name>Test Substation Gamma</cim:IdentifiedObject.name></cim:Substation>
+  <cim:BaseVoltage rdf:ID="_bv-400"><cim:IdentifiedObject.name>400 kV</cim:IdentifiedObject.name><cim:BaseVoltage.nominalVoltage>400</cim:BaseVoltage.nominalVoltage></cim:BaseVoltage>
+</rdf:RDF>

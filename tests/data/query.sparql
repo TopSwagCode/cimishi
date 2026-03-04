@@ -1,0 +1,8 @@
+PREFIX cim: <http://iec.ch/TC57/CIM100#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?name WHERE {
+  ?sub a cim:Substation ;
+       cim:IdentifiedObject.name ?name .
+}
+ORDER BY ?name

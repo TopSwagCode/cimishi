@@ -1,0 +1,14 @@
+[pipeline]
+name = "test-local"
+
+[[sources]]
+type = "local"
+path = "/input"
+patterns = ["*.xml"]
+
+[query]
+file = "/input/query.sparql"
+
+[output]
+dir = "/output"
+formats = ["csv"]

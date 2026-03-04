@@ -1,0 +1,53 @@
+# RDF Query Pipeline - Local Development Configuration
+# Use this config when running with Rust locally (not in Docker).
+# Paths are relative to the project root directory.
+
+[pipeline]
+name = "cim-query-local"
+parallel = true
+max_concurrent = 10
+
+# =============================================================================
+# SOURCES - Local filesystem with relative paths
+# =============================================================================
+
+[[sources]]
+type = "local"
+path = "./examples/data"                    # Relative to where you run the command
+patterns = ["*.xml", "*.rdf", "*.zip", "*.gz"]
+recursive = true
+
+# =============================================================================
+# PROCESSORS - In-memory data transformation (optional)
+# =============================================================================
+
+# Uncomment to enable ZIP/GZIP decompression:
+# [[processors]]
+# type = "unzip"
+# archive_patterns = ["*.zip"]
+# gzip_patterns = ["*.gz", "*.gzip"]
+# patterns = ["*.xml", "*.rdf"]
+
+# Uncomment to filter files:
+# [[processors]]
+# type = "filter"
+# include = ["*_EQ_*.xml", "*_TP_*.xml"]
+# exclude = ["*_BD_*.xml"]
+
+# =============================================================================
+# QUERY - SPARQL configuration
+# =============================================================================
+
+[query]
+file = "./examples/queries/query.sparql"    # Relative path to SPARQL query file
+base_iri = "http://example.org/"
+
+# =============================================================================
+# OUTPUT - Results configuration
+# =============================================================================
+
+[output]
+dir = "./output"                           # Relative path for results
+formats = ["csv"]
+metadata = true
+prefix = "results"
