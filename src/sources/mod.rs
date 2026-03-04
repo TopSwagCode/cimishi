@@ -42,14 +42,8 @@ pub trait Source: Send + Sync {
 pub fn create_source(config: &SourceConfig) -> Box<dyn Source> {
     match config {
         SourceConfig::Local(cfg) => Box::new(LocalSource::new(cfg.clone())),
-        SourceConfig::S3(cfg) => {
-            Box::new(ObjectStoreSource::s3(cfg.clone()))
-        }
-        SourceConfig::Azure(cfg) => {
-            Box::new(ObjectStoreSource::azure(cfg.clone()))
-        }
-        SourceConfig::Gcs(cfg) => {
-            Box::new(ObjectStoreSource::gcs(cfg.clone()))
-        }
+        SourceConfig::S3(cfg) => Box::new(ObjectStoreSource::s3(cfg.clone())),
+        SourceConfig::Azure(cfg) => Box::new(ObjectStoreSource::azure(cfg.clone())),
+        SourceConfig::Gcs(cfg) => Box::new(ObjectStoreSource::gcs(cfg.clone())),
     }
 }

@@ -69,7 +69,11 @@ impl ObjectStoreSource {
         let store = builder.build().expect("Failed to build Azure client");
 
         let name = if !config.files.is_empty() {
-            format!("azure://{}/[{} files]", config.container, config.files.len())
+            format!(
+                "azure://{}/[{} files]",
+                config.container,
+                config.files.len()
+            )
         } else {
             format!("azure://{}/{}", config.container, config.prefix)
         };
@@ -88,8 +92,7 @@ impl ObjectStoreSource {
     /// - STORAGE_EMULATOR_HOST: http://fake-gcs:4443
     /// - GOOGLE_APPLICATION_CREDENTIALS: /path/to/credentials.json
     pub fn gcs(config: GcsSourceConfig) -> Self {
-        let mut builder = GoogleCloudStorageBuilder::from_env()
-            .with_bucket_name(&config.bucket);
+        let mut builder = GoogleCloudStorageBuilder::from_env().with_bucket_name(&config.bucket);
 
         // Override service account key if provided in config
         if let Some(ref key) = config.service_account_key {

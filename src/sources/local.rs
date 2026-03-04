@@ -106,10 +106,14 @@ impl LocalSource {
             message: format!("Failed to read directory '{}': {}", dir.display(), e),
         })?;
 
-        while let Some(entry) = entries.next_entry().await.map_err(|e| PipelineError::Source {
-            source_name: self.name.clone(),
-            message: format!("Failed to read entry: {}", e),
-        })? {
+        while let Some(entry) = entries
+            .next_entry()
+            .await
+            .map_err(|e| PipelineError::Source {
+                source_name: self.name.clone(),
+                message: format!("Failed to read entry: {}", e),
+            })?
+        {
             let path = entry.path();
             let metadata = entry.metadata().await.map_err(|e| PipelineError::Source {
                 source_name: self.name.clone(),

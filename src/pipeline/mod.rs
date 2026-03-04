@@ -29,7 +29,10 @@ impl Pipeline {
         info!("Starting pipeline: {}", self.config.pipeline.name);
 
         // Stage 1: Fetch from all sources
-        info!("Stage 1: Fetching data from {} sources", self.config.sources.len());
+        info!(
+            "Stage 1: Fetching data from {} sources",
+            self.config.sources.len()
+        );
         let files = self.fetch_all().await?;
         info!("Fetched {} files total", files.len());
 

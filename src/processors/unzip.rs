@@ -120,25 +120,26 @@ impl UnzipProcessor {
 
         for i in 0..entries_count {
             // Get entry info and convert to owned strings before mutably borrowing zip
-            let (entry_filename, simple_name) = {
-                let entry = zip.file().entries().get(i).ok_or_else(|| {
-                    PipelineError::Zip(format!("Entry {} not found in zip", i))
-                })?;
+            let (entry_filename, simple_name) =
+                {
+                    let entry = zip.file().entries().get(i).ok_or_else(|| {
+                        PipelineError::Zip(format!("Entry {} not found in zip", i))
+                    })?;
 
-                let filename = entry.filename().as_str().map_err(|e| {
-                    PipelineError::Zip(format!("Invalid filename in zip: {}", e))
-                })?;
+                    let filename = entry.filename().as_str().map_err(|e| {
+                        PipelineError::Zip(format!("Invalid filename in zip: {}", e))
+                    })?;
 
-                // Skip directories
-                if filename.ends_with('/') {
-                    continue;
-                }
+                    // Skip directories
+                    if filename.ends_with('/') {
+                        continue;
+                    }
 
-                // Extract just the filename without path
-                let simple_name = filename.rsplit('/').next().unwrap_or(filename).to_string();
+                    // Extract just the filename without path
+                    let simple_name = filename.rsplit('/').next().unwrap_or(filename).to_string();
 
-                (filename.to_string(), simple_name)
-            };
+                    (filename.to_string(), simple_name)
+                };
 
             if !self.matches_extract_pattern(&simple_name) {
                 continue;
@@ -215,7 +216,7 @@ impl Processor for UnzipProcessor {
                 match self.decompress_gzip(&file).await {
                     Ok(decompressed) => {
                         gzip_files_processed += 1;
-                        
+
                         // Check if decompressed file matches extract patterns
                         if self.matches_extract_pattern(&decompressed.filename) {
                             result.push(decompressed);

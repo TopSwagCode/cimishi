@@ -2,8 +2,8 @@
 //!
 //! A modular pipeline for fetching, processing, and querying RDF data.
 
-use clap::Parser;
 use cimishi::{Pipeline, PipelineConfig};
+use clap::Parser;
 use std::path::PathBuf;
 use tracing::info;
 use tracing_subscriber::{fmt, EnvFilter};
@@ -33,10 +33,7 @@ async fn main() -> anyhow::Result<()> {
         EnvFilter::new("info")
     };
 
-    fmt()
-        .with_env_filter(filter)
-        .with_target(false)
-        .init();
+    fmt().with_env_filter(filter).with_target(false).init();
 
     info!("RDF Query Pipeline v{}", env!("CARGO_PKG_VERSION"));
 

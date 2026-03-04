@@ -32,14 +32,14 @@ impl PipelineConfig {
     pub fn from_file(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let content = std::fs::read_to_string(path)?;
-        
+
         // Detect format from extension
         let extension = path
             .extension()
             .and_then(|ext| ext.to_str())
             .map(|s| s.to_lowercase())
             .unwrap_or_default();
-        
+
         match extension.as_str() {
             "yaml" | "yml" => Self::from_yaml(&content),
             "json" => Self::from_json(&content),

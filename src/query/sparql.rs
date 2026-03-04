@@ -137,13 +137,17 @@ impl QueryEngine for SparqlEngine {
                 .map_err(|e| PipelineError::RdfParse(e.to_string()))?;
 
             let cursor = Cursor::new(&file.content[..]);
-            let count_before = store.len().map_err(|e| PipelineError::Query(e.to_string()))?;
+            let count_before = store
+                .len()
+                .map_err(|e| PipelineError::Query(e.to_string()))?;
 
             store
                 .load_from_reader(parser, cursor)
                 .map_err(|e| PipelineError::RdfParse(format!("{}: {}", file.filename, e)))?;
 
-            let count_after = store.len().map_err(|e| PipelineError::Query(e.to_string()))?;
+            let count_after = store
+                .len()
+                .map_err(|e| PipelineError::Query(e.to_string()))?;
             let loaded = count_after - count_before;
 
             debug!("  Loaded {} triples from {}", loaded, file.filename);
@@ -207,7 +211,12 @@ impl QueryEngine for SparqlEngine {
                     ));
                 }
                 let count = graph_triples.len();
-                (QueryResultsData::Graph { triples: graph_triples }, count)
+                (
+                    QueryResultsData::Graph {
+                        triples: graph_triples,
+                    },
+                    count,
+                )
             }
         };
 

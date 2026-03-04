@@ -32,11 +32,7 @@ impl OutputWriter for MetadataWriter {
         })?;
 
         writeln!(file, "pipeline_name: {}", metadata.pipeline_name)?;
-        writeln!(
-            file,
-            "timestamp: {}",
-            metadata.timestamp.to_rfc3339()
-        )?;
+        writeln!(file, "timestamp: {}", metadata.timestamp.to_rfc3339())?;
         writeln!(file, "files_loaded: {}", output.files_loaded)?;
         writeln!(file, "triples_loaded: {}", output.triples_loaded)?;
         writeln!(file, "load_time_ms: {}", output.load_time.as_millis())?;
@@ -56,7 +52,11 @@ impl OutputWriter for MetadataWriter {
         // Memory usage
         if let Some(mem_bytes) = output.peak_memory_bytes {
             writeln!(file, "peak_memory_bytes: {}", mem_bytes)?;
-            writeln!(file, "peak_memory_mb: {:.2}", mem_bytes as f64 / 1024.0 / 1024.0)?;
+            writeln!(
+                file,
+                "peak_memory_mb: {:.2}",
+                mem_bytes as f64 / 1024.0 / 1024.0
+            )?;
         }
 
         info!("Metadata written to: {}", filepath.display());
