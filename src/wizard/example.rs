@@ -91,17 +91,21 @@ pub async fn download_example() -> anyhow::Result<()> {
     fs::create_dir_all(&configs_dir)?;
     let config_path = configs_dir.join("example-pipeline.json");
     let query_path = queries_dir.join("example-query.sparql");
-    let config_content = pipeline_config_json(
-        &data_dir.to_string_lossy(),
-        &query_path.to_string_lossy(),
-    );
+    let config_content =
+        pipeline_config_json(&data_dir.to_string_lossy(), &query_path.to_string_lossy());
     fs::write(&config_path, &config_content)?;
     println!("  {} ... OK (generated)", config_path.display());
 
     println!("\n--- Example ready ---");
-    println!("  {}   Sample RDF data (ZIP archive)", data_dir.join("example-data.zip").display());
+    println!(
+        "  {}   Sample RDF data (ZIP archive)",
+        data_dir.join("example-data.zip").display()
+    );
     println!("  {}   SPARQL query", query_path.display());
-    println!("  {}   Pipeline config (unzips + queries)", config_path.display());
+    println!(
+        "  {}   Pipeline config (unzips + queries)",
+        config_path.display()
+    );
 
     println!("\n--- Run it ---");
     println!("  cimishi query --config {}", config_path.display());

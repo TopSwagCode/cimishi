@@ -11,7 +11,9 @@ use crate::paths;
 pub async fn run_wizard() -> anyhow::Result<()> {
     let term = Term::stderr();
     if !term.is_term() {
-        anyhow::bail!("Interactive wizard requires a TTY. Use --config to pass a config file directly.");
+        anyhow::bail!(
+            "Interactive wizard requires a TTY. Use --config to pass a config file directly."
+        );
     }
 
     println!("\nCimishi — Config Wizard\n");
@@ -44,7 +46,9 @@ pub async fn run_wizard() -> anyhow::Result<()> {
                 .chars()
                 .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
             {
-                return Err("Only alphanumeric characters, hyphens, and underscores are allowed".into());
+                return Err(
+                    "Only alphanumeric characters, hyphens, and underscores are allowed".into(),
+                );
             }
             Ok(())
         })
@@ -95,7 +99,10 @@ pub async fn run_wizard() -> anyhow::Result<()> {
     let config_content = templates::config_toml(&name, source_type, query_type, &selected_formats);
     if config_path.exists() {
         let overwrite = Select::new()
-            .with_prompt(format!("{} already exists. Overwrite?", config_path.display()))
+            .with_prompt(format!(
+                "{} already exists. Overwrite?",
+                config_path.display()
+            ))
             .items(&["yes", "no"])
             .default(1)
             .interact()?;
@@ -146,17 +153,23 @@ pub async fn run_wizard() -> anyhow::Result<()> {
     println!("\n--- Next steps ---");
     println!(
         "  1. Edit the config:  {}",
-        paths::configs_dir().join(format!("{}.toml", name)).display()
+        paths::configs_dir()
+            .join(format!("{}.toml", name))
+            .display()
     );
     if query_type == "file" {
         println!(
             "  2. Edit the query:   {}",
-            paths::queries_dir().join(format!("{}.sparql", name)).display()
+            paths::queries_dir()
+                .join(format!("{}.sparql", name))
+                .display()
         );
     }
     println!(
         "  3. Run the pipeline: cimishi query --config {}",
-        paths::configs_dir().join(format!("{}.toml", name)).display()
+        paths::configs_dir()
+            .join(format!("{}.toml", name))
+            .display()
     );
 
     match source_type {
