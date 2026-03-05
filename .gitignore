@@ -25,6 +25,9 @@ Desktop.ini
 .env.*.local
 *.env
 
+# Cimishi local project directory
+.cimishi/
+
 # Output directories
 /output/
 

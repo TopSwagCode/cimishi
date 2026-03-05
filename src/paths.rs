@@ -21,14 +21,34 @@ pub fn config_dir() -> PathBuf {
     .join("cimishi")
 }
 
-/// `<config_dir>/configs/`
+/// `<config_dir>/config/`
 pub fn configs_dir() -> PathBuf {
-    config_dir().join("configs")
+    config_dir().join("config")
 }
 
-/// `<config_dir>/queries/`
+/// `<config_dir>/query/`
 pub fn queries_dir() -> PathBuf {
-    config_dir().join("queries")
+    config_dir().join("query")
+}
+
+/// `.cimishi/` — local project directory (like `.github/`)
+pub fn local_dir() -> PathBuf {
+    PathBuf::from(".cimishi")
+}
+
+/// `.cimishi/config/`
+pub fn local_config_dir() -> PathBuf {
+    local_dir().join("config")
+}
+
+/// `.cimishi/query/`
+pub fn local_query_dir() -> PathBuf {
+    local_dir().join("query")
+}
+
+/// `.cimishi/data/`
+pub fn local_data_dir() -> PathBuf {
+    local_dir().join("data")
 }
 
 /// Returns the data directory for cimishi.
@@ -54,7 +74,8 @@ pub fn data_dir() -> PathBuf {
 
 /// Print all resolved paths to stdout.
 pub fn print_paths() {
-    println!("Config directory:  {}", configs_dir().display());
-    println!("Query directory:   {}", queries_dir().display());
-    println!("Data directory:    {}", data_dir().display());
+    println!("Global config directory:  {}", configs_dir().display());
+    println!("Global query directory:   {}", queries_dir().display());
+    println!("Global data directory:    {}", data_dir().display());
+    println!("Local project directory:  {}", local_dir().display());
 }

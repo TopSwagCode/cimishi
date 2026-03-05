@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use console::Term;
 use dialoguer::Select;
 use tracing_subscriber::{fmt, EnvFilter};
@@ -51,11 +49,11 @@ pub async fn run_interactive_menu() -> anyhow::Result<()> {
 }
 
 async fn run_saved_config() -> anyhow::Result<()> {
-    // Check both CWD configs/ and the platform config directory, merging results
-    let local_dir = Path::new("configs");
+    // Check both .cimishi/config/ and the global config directory, merging results
+    let local_dir = paths::local_config_dir();
     let global_dir = paths::configs_dir();
 
-    let mut entries = runner::scan_configs(local_dir);
+    let mut entries = runner::scan_configs(&local_dir);
     let global_entries = runner::scan_configs(&global_dir);
 
     // Add global entries that don't conflict with local ones (by name)
@@ -68,7 +66,7 @@ async fn run_saved_config() -> anyhow::Result<()> {
 
     if entries.is_empty() {
         println!(
-            "\nNo config files found in configs/ or {}.\n\
+            "\nNo config files found in .cimishi/config/ or {}.\n\
              Run `cimishi init` to create one.",
             global_dir.display()
         );

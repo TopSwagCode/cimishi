@@ -19,14 +19,14 @@ pub async fn run_wizard() -> anyhow::Result<()> {
     println!("\nCimishi — Config Wizard\n");
 
     // Step 1: Config type
-    let config_types = &["download example (quick start)", "query", "compare"];
+    let config_types = &["query", "compare", "download query example (quick start)"];
     let config_type_idx = Select::new()
         .with_prompt("What would you like to do?")
         .items(config_types)
         .default(0)
         .interact()?;
 
-    if config_type_idx == 0 {
+    if config_type_idx == 2 {
         return super::example::download_example().await;
     }
 
@@ -89,9 +89,9 @@ pub async fn run_wizard() -> anyhow::Result<()> {
         .map(|&i| format_options[i].to_string())
         .collect();
 
-    // Step 6: Write files
-    let config_path = paths::configs_dir().join(format!("{}.toml", name));
-    let query_path = paths::queries_dir().join(format!("{}.sparql", name));
+    // Step 6: Write files into .cimishi/ (local to CWD so they can be committed)
+    let config_path = paths::local_config_dir().join(format!("{}.toml", name));
+    let query_path = paths::local_query_dir().join(format!("{}.sparql", name));
 
     // Check for conflicts
     let mut files_to_write: Vec<(&Path, String)> = Vec::new();
@@ -151,25 +151,13 @@ pub async fn run_wizard() -> anyhow::Result<()> {
     }
 
     println!("\n--- Next steps ---");
-    println!(
-        "  1. Edit the config:  {}",
-        paths::configs_dir()
-            .join(format!("{}.toml", name))
-            .display()
-    );
+    println!("  1. Edit the config:  {}", config_path.display());
     if query_type == "file" {
-        println!(
-            "  2. Edit the query:   {}",
-            paths::queries_dir()
-                .join(format!("{}.sparql", name))
-                .display()
-        );
+        println!("  2. Edit the query:   {}", query_path.display());
     }
     println!(
         "  3. Run the pipeline: cimishi query --config {}",
-        paths::configs_dir()
-            .join(format!("{}.toml", name))
-            .display()
+        config_path.display()
     );
 
     match source_type {

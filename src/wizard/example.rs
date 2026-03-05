@@ -67,9 +67,9 @@ fn pipeline_config_json(data_dir: &str, query_path: &str) -> String {
 pub async fn download_example() -> anyhow::Result<()> {
     println!("\nDownloading example files...\n");
 
-    let data_dir = paths::data_dir();
-    let queries_dir = paths::queries_dir();
-    let configs_dir = paths::configs_dir();
+    let data_dir = paths::local_data_dir();
+    let queries_dir = paths::local_query_dir();
+    let configs_dir = paths::local_config_dir();
 
     let client = reqwest::Client::new();
 

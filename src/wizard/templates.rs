@@ -14,7 +14,7 @@ pub fn config_toml(
     let query_section = match query_type {
         "file" => format!(
             r#"[query]
-file = "./queries/{name}.sparql"    # Path to SPARQL query file
+file = ".cimishi/query/{name}.sparql"    # Path to SPARQL query file
 base_iri = "http://example.org/""#
         ),
         _ => r#"[query]
@@ -65,7 +65,7 @@ patterns = ["*.xml", "*.rdf"]"#
         _ => r#"# Local filesystem source
 [[sources]]
 type = "local"
-path = "./data"                           # Path to directory containing RDF files
+path = ".cimishi/data"                    # Path to directory containing RDF files
 patterns = ["*.xml", "*.rdf", "*.zip", "*.gz"]
 recursive = true"#
             .to_string(),
