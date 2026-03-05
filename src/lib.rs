@@ -26,11 +26,14 @@
 
 pub mod config;
 pub mod error;
+pub mod interactive;
 pub mod output;
+pub mod paths;
 pub mod pipeline;
 pub mod processors;
 pub mod query;
 pub mod sources;
+pub mod wizard;
 
 // Re-export main types for convenience
 pub use config::PipelineConfig;

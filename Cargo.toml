@@ -24,6 +24,8 @@ serde_json = "1"
 
 # CLI
 clap = { version = "4", features = ["derive"] }
+dialoguer = "0.11"
+console = "0.15"
 
 # Error handling
 thiserror = "2"
@@ -37,9 +39,13 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 async-compression = { version = "0.4", features = ["tokio", "gzip", "zstd"] }
 async_zip = { version = "0.0.17", features = ["tokio", "deflate"] }
 
+# HTTP (for downloading examples)
+reqwest = "0.12"
+
 # Utilities
 chrono = "0.4"
 bytes = "1"
 glob = "0.3"
 url = "2"
 memory-stats = "1"
+dirs = "6"

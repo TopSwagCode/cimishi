@@ -14,7 +14,7 @@ use tracing_subscriber::{fmt, EnvFilter};
 #[command(author, version, about, long_about = None)]
 struct Cli {
     #[command(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -32,6 +32,16 @@ enum Commands {
 
     /// Compare query results (not yet implemented).
     Compare,
+
+    /// Create a new pipeline configuration interactively.
+    Init {
+        /// Skip the interactive wizard and download the example files directly.
+        #[arg(long)]
+        download_example: bool,
+    },
+
+    /// Show resolved config, query, and data directory paths.
+    Paths,
 }
 
 #[tokio::main]
@@ -39,7 +49,7 @@ async fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Query { config, verbose } => {
+        Some(Commands::Query { config, verbose }) => {
             // Initialize logging
             let filter = if verbose {
                 EnvFilter::new("debug")
@@ -64,9 +74,22 @@ async fn main() -> anyhow::Result<()> {
             let pipeline = Pipeline::new(config);
             pipeline.run().await?;
         }
-        Commands::Compare => {
+        Some(Commands::Compare) => {
             eprintln!("Error: compare is not implemented");
             std::process::exit(1);
+        }
+        Some(Commands::Init { download_example }) => {
+            if download_example {
+                cimishi::wizard::example::download_example().await?;
+            } else {
+                cimishi::wizard::flow::run_wizard().await?;
+            }
+        }
+        Some(Commands::Paths) => {
+            cimishi::paths::print_paths();
+        }
+        None => {
+            cimishi::interactive::menu::run_interactive_menu().await?;
         }
     }
 
