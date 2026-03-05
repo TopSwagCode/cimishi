@@ -7,7 +7,7 @@
 #   1. Put your RDF/XML files in ./examples/data/
 #   2. Choose a config format below (JSON, YAML, or TOML)
 #   3. Run: docker compose up
-#   4. Results appear in ./output/
+#   4. Results appear in ./.cimishi/output/
 # =============================================================================
 
 services:
@@ -35,7 +35,7 @@ services:
       # Input/Output directories (always needed)
       - ./examples/data:/app/examples/data:ro       # Your RDF/XML/ZIP files go here
       - ./examples/queries:/app/examples/queries:ro  # SPARQL query files
-      - ./output:/app/output                         # Query results are written here
+      - ./.cimishi/output:/app/.cimishi/output         # Query results are written here
 
       # ── Config Files ──────────────────────────────────────────────────────
       # Choose ONE config file that matches your command above

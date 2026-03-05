@@ -114,7 +114,7 @@ max_concurrent = 10
 # =============================================================================
 
 [output]
-dir = "./output"
+dir = "./.cimishi/output"
 formats = [{formats_str}]
 metadata = true
 prefix = "results"

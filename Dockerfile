@@ -26,6 +26,6 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /app/target/release/cimishi .
 
 # Create input/output directories
-RUN mkdir -p /app/examples/data /app/examples/queries /app/output
+RUN mkdir -p /app/examples/data /app/examples/queries /app/.cimishi/output
 
 ENTRYPOINT ["./cimishi"]

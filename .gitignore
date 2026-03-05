@@ -25,11 +25,8 @@ Desktop.ini
 .env.*.local
 *.env
 
-# Cimishi local project directory
+# Cimishi local project directory (keep config/ and query/ committable)
 .cimishi/
-
-# Output directories
-/output/
 
 # Logs
 *.log

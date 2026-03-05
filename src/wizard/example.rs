@@ -53,7 +53,7 @@ fn pipeline_config_json(data_dir: &str, query_path: &str) -> String {
     "base_iri": "http://example.org/"
   }},
   "output": {{
-    "dir": "./output",
+    "dir": "./.cimishi/output",
     "formats": ["csv", "json", "terminal"],
     "metadata": true,
     "prefix": "example-results"
@@ -111,7 +111,7 @@ pub async fn download_example() -> anyhow::Result<()> {
     println!("  cimishi query --config {}", config_path.display());
 
     println!("\n--- Results ---");
-    println!("  Output will be written to ./output/");
+    println!("  Output will be written to ./.cimishi/output/");
     println!("  Look for example-results*.csv and example-results*.metadata.json\n");
 
     Ok(())

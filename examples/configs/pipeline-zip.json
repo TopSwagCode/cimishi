@@ -29,7 +29,7 @@
     "base_iri": "http://example.org/"
   },
   "output": {
-    "dir": "././.cimishi/output",
+    "dir": "./.cimishi/output",
     "formats": ["csv", "json", "terminal"],
     "metadata": true,
     "prefix": "results"
