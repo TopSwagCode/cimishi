@@ -24,7 +24,7 @@
   },
 
   "output": {
-    "dir": "./output",
+    "dir": "./.cimishi/output",
     "formats": ["csv", "json"],
     "metadata": true,
     "prefix": "results"

@@ -47,7 +47,7 @@ base_iri = "http://example.org/"
 # =============================================================================
 
 [output]
-dir = "./output"                           # Relative path for results
+dir = "./.cimishi/output"                           # Relative path for results
 formats = ["csv"]
 metadata = true
 prefix = "results"

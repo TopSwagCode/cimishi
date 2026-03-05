@@ -96,7 +96,7 @@ base_iri = "http://example.org/"
 # =============================================================================
 
 [output]
-dir = "./output"
+dir = "./.cimishi/output"
 formats = ["csv"]
 metadata = true
 prefix = "results_explicit"

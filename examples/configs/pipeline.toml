@@ -127,7 +127,7 @@ base_iri = "http://example.org/"
 # =============================================================================
 
 [output]
-dir = "./output"
+dir = "./.cimishi/output"
 formats = ["csv"]        # Options: "csv", "json"
 metadata = true          # Write timing/stats metadata file
 prefix = "results"       # Output filename prefix

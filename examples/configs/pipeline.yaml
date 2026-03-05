@@ -94,7 +94,7 @@ query:
 # =============================================================================
 
 output:
-  dir: ./output
+  dir: ./.cimishi/output
   formats:
     - csv
   metadata: true
