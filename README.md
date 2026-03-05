@@ -30,7 +30,7 @@ docker run --rm \
   -v $(pwd)/examples/data:/app/examples/data:ro \
   -v $(pwd)/examples/queries:/app/examples/queries:ro \
   -v $(pwd)/output:/app/output \
-  cimishi --config /app/pipeline.toml
+  cimishi query --config /app/pipeline.toml
 ```
 
 The `-v` flags mount your config, input files, and output directory into the container. Add `--verbose` for debug logging.
@@ -45,10 +45,10 @@ Requires [Rust 1.75+](https://rustup.rs/).
 
 ```bash
 # Run directly (compiles + runs in one step)
-cargo run -- --config examples/configs/pipeline-local.toml
+cargo run -- query --config examples/configs/pipeline-local.toml
 
 # With verbose logging
-cargo run -- --config examples/configs/pipeline-local.toml --verbose
+cargo run -- query --config examples/configs/pipeline-local.toml --verbose
 ```
 
 The `--` separates Cargo flags from application arguments.

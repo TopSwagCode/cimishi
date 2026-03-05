@@ -351,6 +351,7 @@ fn default_metadata() -> bool {
 pub enum OutputFormat {
     Csv,
     Json,
+    Terminal,
 }
 
 #[cfg(test)]

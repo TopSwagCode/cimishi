@@ -98,7 +98,7 @@ services:
       - ./configs/local.toml:/app/config.toml:ro
       - ./data:/input:ro
       - ./output/local:/output
-    command: ["--config", "/app/config.toml"]
+    command: ["query","--config", "/app/config.toml"]
 
   # Test S3 (MinIO)
   test-s3:

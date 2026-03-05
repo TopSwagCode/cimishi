@@ -30,7 +30,7 @@
   },
   "output": {
     "dir": "./output",
-    "formats": ["csv", "json"],
+    "formats": ["csv", "json", "terminal"],
     "metadata": true,
     "prefix": "results"
   }

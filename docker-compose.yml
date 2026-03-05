@@ -20,13 +20,13 @@ services:
     # ─────────────────────────────────────────────────────────────────────────
     
     # JSON config (currently active)
-    command: ["--config", "/app/pipeline.json"]
+    command: ["query", "--config", "/app/pipeline.json"]
     
     # YAML config
-    # command: ["--config", "/app/pipeline.yaml"]
+    # command: ["query", "--config", "/app/pipeline.yaml"]
     
     # TOML config
-    # command: ["--config", "/app/pipeline.toml"]
+    # command: ["query", "--config", "/app/pipeline.toml"]
 
     # ─────────────────────────────────────────────────────────────────────────
     # VOLUMES - Data directories and config files
