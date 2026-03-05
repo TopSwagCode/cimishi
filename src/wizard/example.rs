@@ -20,7 +20,13 @@ const EXAMPLE_QUERY_FILES: &[ExampleFile] = &[ExampleFile {
     filename: "example-query.sparql",
 }];
 
+fn normalize_path(p: &str) -> String {
+    p.replace('\\', "/")
+}
+
 fn pipeline_config_json(data_dir: &str, query_path: &str) -> String {
+    let data_dir = normalize_path(data_dir);
+    let query_path = normalize_path(query_path);
     format!(
         r#"{{
   "pipeline": {{
