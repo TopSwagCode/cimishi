@@ -188,8 +188,12 @@ cimishi blueprint --source https://example.com/my-blueprint.toml
 
 Blueprints are also available from the interactive menu (`cimishi` with no arguments) and the init wizard (`cimishi init`).
 
+### Blueprint format
+
+Blueprints support TOML, YAML, and JSON — format is auto-detected from the file extension. All three sections (`configs`, `queries`, `data`) are optional. The `filename` field is optional and defaults to the URL filename.
+
 <details>
-<summary>Blueprint format</summary>
+<summary>TOML (blueprint.toml)</summary>
 
 ```toml
 [blueprint]
@@ -198,7 +202,7 @@ description = "Optional description"
 
 [[configs]]
 url = "https://example.com/pipeline.toml"
-filename = "my-pipeline.toml"  # optional, defaults to URL filename
+filename = "my-pipeline.toml"
 
 [[queries]]
 url = "https://example.com/query.sparql"
@@ -207,7 +211,60 @@ url = "https://example.com/query.sparql"
 url = "https://example.com/data.zip"
 ```
 
-All three sections are optional. Files download to:
+</details>
+
+<details>
+<summary>YAML (blueprint.yaml)</summary>
+
+```yaml
+blueprint:
+  name: my-setup
+  description: Optional description
+
+configs:
+  - url: https://example.com/pipeline.toml
+    filename: my-pipeline.toml
+
+queries:
+  - url: https://example.com/query.sparql
+
+data:
+  - url: https://example.com/data.zip
+```
+
+</details>
+
+<details>
+<summary>JSON (blueprint.json)</summary>
+
+```json
+{
+  "blueprint": {
+    "name": "my-setup",
+    "description": "Optional description"
+  },
+  "configs": [
+    {
+      "url": "https://example.com/pipeline.toml",
+      "filename": "my-pipeline.toml"
+    }
+  ],
+  "queries": [
+    {
+      "url": "https://example.com/query.sparql"
+    }
+  ],
+  "data": [
+    {
+      "url": "https://example.com/data.zip"
+    }
+  ]
+}
+```
+
+</details>
+
+Files download to:
 
 | Section   | Directory          |
 |-----------|--------------------|
@@ -215,9 +272,7 @@ All three sections are optional. Files download to:
 | `queries` | `.cimishi/query/`  |
 | `data`    | `.cimishi/data/`   |
 
-See `examples/blueprints/` for ready-made examples.
-
-</details>
+See `examples/blueprints/` for ready-made examples in all three formats.
 
 ---
 
