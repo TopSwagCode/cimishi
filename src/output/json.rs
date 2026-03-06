@@ -93,3 +93,141 @@ impl OutputWriter for JsonWriter {
         Ok(vec![filepath.to_string_lossy().to_string()])
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::{OutputConfig, OutputFormat};
+    use crate::output::OutputMetadata;
+    use crate::query::{QueryOutput, QueryResultsData};
+    use std::time::Duration;
+    use tempfile::TempDir;
+
+    fn make_test_output(results: QueryResultsData, count: usize) -> QueryOutput {
+        QueryOutput {
+            results,
+            count,
+            load_time: Duration::from_millis(100),
+            query_time: Duration::from_millis(50),
+            files_loaded: 1,
+            triples_loaded: 10,
+            peak_memory_bytes: Some(1024),
+        }
+    }
+
+    fn make_test_metadata() -> OutputMetadata {
+        OutputMetadata {
+            pipeline_name: "test".to_string(),
+            timestamp: chrono::Utc::now(),
+        }
+    }
+
+    fn make_test_config(dir: &str) -> OutputConfig {
+        OutputConfig {
+            dir: dir.to_string(),
+            formats: vec![OutputFormat::Json],
+            metadata: false,
+            prefix: Some("test".to_string()),
+        }
+    }
+
+    #[test]
+    fn test_json_solutions_output() {
+        let tmp_dir = TempDir::new().unwrap();
+        let config = make_test_config(tmp_dir.path().to_str().unwrap());
+        let metadata = make_test_metadata();
+
+        let output = make_test_output(
+            QueryResultsData::Solutions {
+                variables: vec!["name".to_string(), "value".to_string()],
+                rows: vec![
+                    vec!["alice".to_string(), "42".to_string()],
+                    vec!["bob".to_string(), "99".to_string()],
+                ],
+            },
+            2,
+        );
+
+        let writer = JsonWriter;
+        let paths = writer.write(&output, &metadata, &config).unwrap();
+        let content = std::fs::read_to_string(&paths[0]).unwrap();
+
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        assert_eq!(parsed["type"], "solutions");
+        assert_eq!(parsed["count"], 2);
+        assert!(parsed["results"].is_array());
+        assert_eq!(parsed["results"].as_array().unwrap().len(), 2);
+    }
+
+    #[test]
+    fn test_json_boolean_output() {
+        let tmp_dir = TempDir::new().unwrap();
+        let config = make_test_config(tmp_dir.path().to_str().unwrap());
+        let metadata = make_test_metadata();
+
+        let output = make_test_output(QueryResultsData::Boolean(false), 1);
+
+        let writer = JsonWriter;
+        let paths = writer.write(&output, &metadata, &config).unwrap();
+        let content = std::fs::read_to_string(&paths[0]).unwrap();
+
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        assert_eq!(parsed["type"], "boolean");
+        assert_eq!(parsed["result"], false);
+    }
+
+    #[test]
+    fn test_json_graph_output() {
+        let tmp_dir = TempDir::new().unwrap();
+        let config = make_test_config(tmp_dir.path().to_str().unwrap());
+        let metadata = make_test_metadata();
+
+        let output = make_test_output(
+            QueryResultsData::Graph {
+                triples: vec![(
+                    "http://example.org/s".to_string(),
+                    "http://example.org/p".to_string(),
+                    "http://example.org/o".to_string(),
+                )],
+            },
+            1,
+        );
+
+        let writer = JsonWriter;
+        let paths = writer.write(&output, &metadata, &config).unwrap();
+        let content = std::fs::read_to_string(&paths[0]).unwrap();
+
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        assert_eq!(parsed["type"], "graph");
+        assert!(parsed["triples"].is_array());
+        assert_eq!(parsed["triples"].as_array().unwrap().len(), 1);
+    }
+
+    #[test]
+    fn test_json_escaping() {
+        let tmp_dir = TempDir::new().unwrap();
+        let config = make_test_config(tmp_dir.path().to_str().unwrap());
+        let metadata = make_test_metadata();
+
+        let output = make_test_output(
+            QueryResultsData::Solutions {
+                variables: vec!["col".to_string()],
+                rows: vec![
+                    vec!["back\\slash".to_string()],
+                    vec!["has\"quote".to_string()],
+                ],
+            },
+            2,
+        );
+
+        let writer = JsonWriter;
+        let paths = writer.write(&output, &metadata, &config).unwrap();
+        let content = std::fs::read_to_string(&paths[0]).unwrap();
+
+        // Must parse as valid JSON
+        let parsed: serde_json::Value = serde_json::from_str(&content).unwrap();
+        let results = parsed["results"].as_array().unwrap();
+        assert_eq!(results[0]["col"], "back\\slash");
+        assert_eq!(results[1]["col"], "has\"quote");
+    }
+}

@@ -248,3 +248,102 @@ impl Processor for UnzipProcessor {
         "decompress"
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::config::UnzipProcessorConfig;
+    use bytes::Bytes;
+    use flate2::write::GzEncoder;
+    use flate2::Compression;
+    use std::io::Write;
+
+    fn default_processor() -> UnzipProcessor {
+        UnzipProcessor::new(UnzipProcessorConfig {
+            patterns: vec!["*.xml".to_string(), "*.rdf".to_string()],
+            archive_patterns: vec!["*.zip".to_string()],
+            gzip_patterns: vec!["*.gz".to_string(), "*.gzip".to_string()],
+        })
+    }
+
+    #[test]
+    fn test_is_zip_archive() {
+        let processor = default_processor();
+        assert!(processor.is_zip_archive("data.zip"));
+        assert!(!processor.is_zip_archive("data.xml"));
+    }
+
+    #[test]
+    fn test_is_gzip_file() {
+        let processor = default_processor();
+        assert!(processor.is_gzip_file("data.gz"));
+        assert!(processor.is_gzip_file("data.gzip"));
+        assert!(!processor.is_gzip_file("data.xml"));
+    }
+
+    #[test]
+    fn test_matches_extract_pattern() {
+        let config = UnzipProcessorConfig {
+            patterns: vec!["*.xml".to_string()],
+            archive_patterns: vec!["*.zip".to_string()],
+            gzip_patterns: vec!["*.gz".to_string(), "*.gzip".to_string()],
+        };
+        let processor = UnzipProcessor::new(config);
+        assert!(processor.matches_extract_pattern("test.xml"));
+        assert!(!processor.matches_extract_pattern("test.zip"));
+    }
+
+    #[test]
+    fn test_matches_extract_pattern_empty() {
+        let config = UnzipProcessorConfig {
+            patterns: vec![],
+            archive_patterns: vec!["*.zip".to_string()],
+            gzip_patterns: vec!["*.gz".to_string(), "*.gzip".to_string()],
+        };
+        let processor = UnzipProcessor::new(config);
+        assert!(processor.matches_extract_pattern("anything.txt"));
+        assert!(processor.matches_extract_pattern("test.xml"));
+        assert!(processor.matches_extract_pattern("archive.zip"));
+    }
+
+    #[tokio::test]
+    async fn test_gzip_decompression() {
+        let original_content = b"<rdf:RDF>hello world</rdf:RDF>";
+
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(original_content).unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let file = ProcessedFile {
+            path: "test/path".to_string(),
+            filename: "test.xml.gz".to_string(),
+            content: Bytes::from(compressed),
+            source: "test-source".to_string(),
+        };
+
+        let processor = default_processor();
+        let result = processor.process(vec![file]).await.unwrap();
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].filename, "test.xml");
+        assert_eq!(result[0].content, Bytes::from(&original_content[..]));
+    }
+
+    #[tokio::test]
+    async fn test_passthrough_non_archive() {
+        let content = b"plain xml content";
+        let file = ProcessedFile {
+            path: "some/path".to_string(),
+            filename: "plain.xml".to_string(),
+            content: Bytes::from(&content[..]),
+            source: "test-source".to_string(),
+        };
+
+        let processor = default_processor();
+        let result = processor.process(vec![file]).await.unwrap();
+
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].filename, "plain.xml");
+        assert_eq!(result[0].content, Bytes::from(&content[..]));
+    }
+}

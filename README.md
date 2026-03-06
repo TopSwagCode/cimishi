@@ -2,27 +2,66 @@
 
 ![image.png](image.png)
 
-CIM + 意志 (will) = cimishi — open-source CIM/RDF tooling in Rust.
+**CIM + 意志 (will) = cimishi** — a fast, open-source CLI tool for querying CIM/RDF data with SPARQL.
 
-Fetches RDF/XML from local disk or cloud storage (S3, Azure Blob, GCS), decompresses archives in-memory, runs SPARQL queries via Oxigraph, and writes results to CSV/JSON.
+Fetches RDF/XML from local disk or cloud storage (S3, Azure Blob, GCS), decompresses archives in-memory, runs SPARQL queries via [Oxigraph](https://github.com/oxigraph/oxigraph), and writes results to CSV or JSON.
 
-## Quick Start
+---
 
-### Docker Compose
+## Installation
+
+### Download a binary
+
+Pre-built binaries for **Windows**, **Linux**, and **macOS** are available as zip archives on the [Releases page](https://github.com/TopSwagCode/cimishi/releases).
+
+1. Download the zip for your platform
+2. Extract it
+3. Run `cimishi` (or `cimishi.exe` on Windows)
+
+<details>
+<summary>Linux / macOS</summary>
+
+```bash
+# Example for Linux x86_64 — adjust the URL for your platform
+curl -LO https://github.com/TopSwagCode/cimishi/releases/latest/download/cimishi-linux-x86_64.zip
+unzip cimishi-linux-x86_64.zip
+chmod +x cimishi
+./cimishi --help
+```
+
+Optionally move it to your PATH:
+
+```bash
+sudo mv cimishi /usr/local/bin/
+```
+
+</details>
+
+<details>
+<summary>Windows</summary>
+
+Download the `.zip` from the [Releases page](https://github.com/TopSwagCode/cimishi/releases), extract it, and run `cimishi.exe` from a terminal.
+
+</details>
+
+### Build from source
+
+Requires [Rust 1.75+](https://rustup.rs/).
+
+```bash
+git clone https://github.com/TopSwagCode/cimishi.git
+cd cimishi
+cargo build --release
+./target/release/cimishi --help
+```
+
+### Docker
 
 ```bash
 docker compose up --build
 ```
 
-### Docker Run
-
-Build the image:
-
-```bash
-docker build -t cimishi .
-```
-
-Run with a config file:
+Or run directly:
 
 ```bash
 docker run --rm \
@@ -33,113 +72,11 @@ docker run --rm \
   cimishi query --config /app/pipeline.toml
 ```
 
-The `-v` flags mount your config, input files, and output directory into the container. Add `--verbose` for debug logging.
-
-YAML and JSON configs work the same way — just mount a different file.
-
-### With Cargo
-
-Requires [Rust 1.75+](https://rustup.rs/).
-
-#### Development
-
-```bash
-# Run directly (compiles + runs in one step)
-cargo run -- query --config examples/configs/pipeline-local.toml
-
-# With verbose logging
-cargo run -- query --config examples/configs/pipeline-local.toml --verbose
-```
-
-The `--` separates Cargo flags from application arguments.
-
-#### Release Build (for deployment)
-
-```bash
-# Build optimized binary
-cargo build --release
-
-# Run the binary
-./target/release/cimishi --config examples/configs/pipeline-local.toml
-```
-
-All configs use relative paths (`./examples/data`, `./examples/queries`, `./output`). When running in Docker, the docker-compose.yml mounts host directories to match these paths.
-
-### Example Output
-
-```
-$ cargo run -- --config examples/configs/pipeline-local.toml
-2026-03-04T12:00:00Z  INFO Starting pipeline: cim-query
-2026-03-04T12:00:00Z  INFO Stage 1: Fetching data from 1 sources
-2026-03-04T12:00:00Z  INFO Fetched 14 files total
-2026-03-04T12:00:01Z  INFO Loaded 14 files with 341304 triples in 850ms
-2026-03-04T12:00:01Z  INFO Query returned 105 results in 7ms
-2026-03-04T12:00:01Z  INFO Peak memory usage: 206.83 MB
-2026-03-04T12:00:01Z  INFO CSV written to: output/results_20260304_120001.csv
-```
-
 ---
 
-## Blueprints
+## Quick Start
 
-A blueprint is a manifest file (TOML, YAML, or JSON) that lists configs, queries, and data files to download. Point at a blueprint and everything gets installed to `.cimishi/` — ready to run.
-
-### Install from a blueprint
-
-```bash
-# From a local file
-cimishi blueprint --source examples/blueprints/example-blueprint.toml
-
-# From a URL
-cimishi blueprint --source https://example.com/my-blueprint.toml
-```
-
-Blueprints are also available from the interactive menu (`cimishi` with no arguments) and the init wizard (`cimishi init`).
-
-### Blueprint format
-
-```toml
-[blueprint]
-name = "my-setup"
-description = "Optional description"
-
-[[configs]]
-url = "https://example.com/pipeline.toml"
-filename = "my-pipeline.toml"  # optional, defaults to URL filename
-
-[[queries]]
-url = "https://example.com/query.sparql"
-
-[[data]]
-url = "https://example.com/data.zip"
-```
-
-All three sections (`configs`, `queries`, `data`) are optional. Files download to:
-
-| Section | Directory |
-|---------|-----------|
-| `configs` | `.cimishi/config/` |
-| `queries` | `.cimishi/query/` |
-| `data` | `.cimishi/data/` |
-
-See `examples/blueprints/` for ready-made examples in all three formats.
-
----
-
-## Configuration
-
-Configs can be TOML, YAML, or JSON — format is auto-detected from the file extension. See `examples/configs/` for ready-made configs.
-
-| File | Description |
-|------|-------------|
-| `pipeline.toml` | Default TOML config |
-| `pipeline.yaml` | Same thing in YAML |
-| `pipeline.json` | Same thing in JSON |
-| `pipeline-local.toml` | Same as pipeline.toml (local development) |
-| `pipeline-zip.json` | With ZIP extraction enabled |
-| `explicit-files.toml` | Lists specific files instead of scanning |
-
-### Minimal Config (TOML)
+### 1. Write a config file
 
 ```toml
 [pipeline]
@@ -158,13 +95,95 @@ dir = "./output"
 formats = ["csv"]
 ```
 
-### Full Configuration Reference
+### 2. Run it
+
+```bash
+cimishi query --config pipeline.toml
+```
+
+### 3. Check the output
+
+```
+2026-03-04T12:00:00Z  INFO Starting pipeline: my-query
+2026-03-04T12:00:00Z  INFO Fetched 14 files total
+2026-03-04T12:00:01Z  INFO Loaded 14 files with 341304 triples in 850ms
+2026-03-04T12:00:01Z  INFO Query returned 105 results in 7ms
+2026-03-04T12:00:01Z  INFO Peak memory usage: 206.83 MB
+2026-03-04T12:00:01Z  INFO CSV written to: output/results_20260304_120001.csv
+```
+
+Add `--verbose` for debug logging. Configs can be TOML, YAML, or JSON — format is auto-detected from the file extension.
+
+---
+
+## Blueprints
+
+A blueprint is a manifest file that lists configs, queries, and data files to download. Point at a blueprint and everything gets installed to `.cimishi/` — ready to run.
+
+```bash
+# From a local file
+cimishi blueprint --source examples/blueprints/example-blueprint.toml
+
+# From a URL
+cimishi blueprint --source https://example.com/my-blueprint.toml
+```
+
+Blueprints are also available from the interactive menu (`cimishi` with no arguments) and the init wizard (`cimishi init`).
+
+<details>
+<summary>Blueprint format</summary>
+
+```toml
+[blueprint]
+name = "my-setup"
+description = "Optional description"
+
+[[configs]]
+url = "https://example.com/pipeline.toml"
+filename = "my-pipeline.toml"  # optional, defaults to URL filename
+
+[[queries]]
+url = "https://example.com/query.sparql"
+
+[[data]]
+url = "https://example.com/data.zip"
+```
+
+All three sections are optional. Files download to:
+
+| Section   | Directory          |
+|-----------|--------------------|
+| `configs` | `.cimishi/config/` |
+| `queries` | `.cimishi/query/`  |
+| `data`    | `.cimishi/data/`   |
+
+See `examples/blueprints/` for ready-made examples.
+
+</details>
+
+---
+
+## Configuration Reference
+
+See `examples/configs/` for ready-made configs.
+
+| File                   | Description                          |
+|------------------------|--------------------------------------|
+| `pipeline.toml`        | Default TOML config                  |
+| `pipeline.yaml`        | Same thing in YAML                   |
+| `pipeline.json`        | Same thing in JSON                   |
+| `pipeline-local.toml`  | Local development config             |
+| `pipeline-zip.json`    | With ZIP extraction enabled          |
+| `explicit-files.toml`  | Lists specific files instead of scanning |
+
+<details>
+<summary>Full configuration reference</summary>
 
 ```toml
 [pipeline]
 name = "cim-igm-query"            # Pipeline name (for logging)
-parallel = true                   # Run sources in parallel
-max_concurrent = 10               # Max concurrent operations
+parallel = true                   # Run sources in parallel (default: true)
+max_concurrent = 10               # Max concurrent operations (default: 10)
 
 # --- SOURCES ---
 
@@ -173,7 +192,7 @@ max_concurrent = 10               # Max concurrent operations
 type = "local"
 path = "./examples/data"          # Directory or file path
 patterns = ["*.xml", "*.rdf"]     # Glob patterns to match
-recursive = true                  # Search subdirectories
+recursive = true                  # Search subdirectories (default: true)
 
 # Local filesystem (explicit files)
 [[sources]]
@@ -244,53 +263,16 @@ metadata = true                   # Write .metadata file with timing info
 prefix = "results"                # Filename prefix
 ```
 
-You can combine `path`/`prefix` scanning with explicit `files` in the same source — the pipeline fetches both.
+You can combine `path`/`prefix` scanning with explicit `files` in the same source.
+
+</details>
 
 ---
 
-## Architecture
+## Cloud Storage
 
-```
-Sources --> Processors --> Query --> Output
-```
-
-Four stages, each defined by a trait:
-
-1. **Sources** — Fetch files from storage backends. `LocalSource` for the filesystem, `ObjectStoreSource` for S3/Azure/GCS (via the `object_store` crate). Multiple sources run in parallel when `parallel = true`.
-
-2. **Processors** — Transform files in sequence. `UnzipProcessor` handles ZIP and GZIP decompression entirely in memory, including nested archives (e.g. `.xml.gz` inside a `.zip`). `FilterProcessor` does glob-based include/exclude.
-
-3. **Query** — Loads all processed files as RDF/XML into an in-memory Oxigraph store and executes a SPARQL 1.1 query.
-
-4. **Output** — Writes results. CSV, JSON, and a metadata file with timing/triple counts.
-
-### Compression
-
-All decompression happens in memory. The unzip processor handles:
-
-- ZIP archives (with nested GZIP support)
-- GZIP files (`.gz`, `.gzip`)
-
-Files inside archives that don't match the configured patterns are discarded.
-
-### Output Files
-
-Each run produces timestamped files:
-
-```
-output/
-  results_20260304_120000.csv
-  results_20260304_120000.json
-  results_20260304_120000.metadata
-```
-
-The metadata file includes source count, triple count, query time, and peak memory.
-
----
-
-## Cloud Storage Setup
-
-### AWS S3
+<details>
+<summary>AWS S3</summary>
 
 ```bash
 export AWS_ACCESS_KEY_ID=AKIA...
@@ -300,14 +282,20 @@ export AWS_REGION=eu-west-1
 
 Also works with `~/.aws/credentials` or IAM roles.
 
-### Azure Blob Storage
+</details>
+
+<details>
+<summary>Azure Blob Storage</summary>
 
 ```bash
 export AZURE_STORAGE_ACCOUNT_NAME=myaccount
 export AZURE_STORAGE_ACCOUNT_KEY=base64key...
 ```
 
-### Google Cloud Storage
+</details>
+
+<details>
+<summary>Google Cloud Storage</summary>
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
@@ -315,7 +303,10 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 gcloud auth application-default login
 ```
 
-### S3-Compatible (MinIO, etc.)
+</details>
+
+<details>
+<summary>S3-Compatible (MinIO, etc.)</summary>
 
 Set `endpoint` in the source config:
 
@@ -327,11 +318,14 @@ region = "us-east-1"
 endpoint = "http://localhost:9000"
 ```
 
+</details>
+
 ---
 
 ## SPARQL Examples
 
-List all substations:
+<details>
+<summary>List all substations</summary>
 
 ```sparql
 PREFIX cim: <http://iec.ch/TC57/CIM100#>
@@ -349,7 +343,10 @@ WHERE {
 ORDER BY ?name
 ```
 
-Find high-voltage lines (220kV+):
+</details>
+
+<details>
+<summary>Find high-voltage lines (220kV+)</summary>
 
 ```sparql
 PREFIX cim: <http://iec.ch/TC57/CIM100#>
@@ -365,7 +362,10 @@ WHERE {
 ORDER BY DESC(?voltage)
 ```
 
-Count entities by type:
+</details>
+
+<details>
+<summary>Count entities by type</summary>
 
 ```sparql
 SELECT ?type (COUNT(?s) AS ?count)
@@ -377,31 +377,47 @@ ORDER BY DESC(?count)
 LIMIT 20
 ```
 
+</details>
+
+---
+
+## Architecture
+
+```
+Sources --> Processors --> Query --> Output
+```
+
+| Stage          | What it does                                                                 |
+|----------------|-----------------------------------------------------------------------------|
+| **Sources**    | Fetch files from local disk, S3, Azure, or GCS. Runs in parallel.           |
+| **Processors** | Decompress ZIP/GZIP in-memory, filter files by glob patterns.               |
+| **Query**      | Load RDF/XML into Oxigraph, execute a SPARQL 1.1 query.                     |
+| **Output**     | Write results as CSV, JSON, and/or a metadata file with timing info.        |
+
+Each run produces timestamped output files:
+
+```
+output/
+  results_20260304_120000.csv
+  results_20260304_120000.json
+  results_20260304_120000.metadata
+```
+
 ---
 
 ## Development
 
 ```bash
-# Run during development
-cargo run -- --config examples/configs/pipeline-local.toml
-
-# Run tests
-cargo test
+cargo run -- query --config examples/configs/pipeline-local.toml    # Run
+cargo test                                                          # Test
+cargo fmt --all -- --check                                          # Check formatting
+cargo clippy --all-targets -- -D warnings                           # Lint
 ```
 
-### Adding a New Source
-
-1. Create `src/sources/my_source.rs`
-2. Implement the `Source` trait
-3. Add a variant to `SourceConfig` in `src/config/pipeline.rs`
-4. Update `create_source()` in `src/sources/mod.rs`
-
-### Adding a New Processor
-
-Same pattern — implement `Processor`, add to `ProcessorConfig`, update `create_processor()`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details on adding new sources, processors, or output formats.
 
 ---
 
 ## License
 
-TODO
+This project is licensed under the [MIT License](LICENSE).

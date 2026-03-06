@@ -389,4 +389,136 @@ metadata = true
         assert_eq!(config.sources.len(), 1);
         assert_eq!(config.processors.len(), 1);
     }
+
+    #[test]
+    fn test_parse_yaml_config() {
+        let yaml_str = r#"
+pipeline:
+  name: "yaml-test"
+sources:
+  - type: local
+    path: "./data"
+    patterns: ["*.xml"]
+query:
+  query: "SELECT * WHERE { ?s ?p ?o } LIMIT 10"
+output:
+  dir: "./out"
+  formats: ["csv"]
+"#;
+
+        let config = PipelineConfig::from_yaml(yaml_str).unwrap();
+        assert_eq!(config.pipeline.name, "yaml-test");
+        assert_eq!(config.sources.len(), 1);
+        assert_eq!(config.output.dir, "./out");
+    }
+
+    #[test]
+    fn test_parse_json_config() {
+        let json_str = r#"
+{
+  "pipeline": { "name": "json-test" },
+  "sources": [{ "type": "local", "path": "./data", "patterns": ["*.xml"] }],
+  "query": { "query": "SELECT * WHERE { ?s ?p ?o } LIMIT 10" },
+  "output": { "dir": "./out", "formats": ["csv"] }
+}
+"#;
+
+        let config = PipelineConfig::from_json(json_str).unwrap();
+        assert_eq!(config.pipeline.name, "json-test");
+    }
+
+    #[test]
+    fn test_default_values() {
+        let toml_str = r#"
+[pipeline]
+name = "defaults-test"
+
+[query]
+query = "SELECT * WHERE { ?s ?p ?o }"
+
+[output]
+dir = "./out"
+"#;
+
+        let config = PipelineConfig::from_toml(toml_str).unwrap();
+        assert!(config.pipeline.parallel);
+        assert_eq!(config.pipeline.max_concurrent, 10);
+        assert_eq!(config.query.base_iri, "http://example.org/");
+    }
+
+    #[test]
+    fn test_format_detection_from_extension() {
+        use std::io::Write;
+        use tempfile::TempDir;
+
+        let tmp_dir = TempDir::new().unwrap();
+
+        // TOML config
+        let toml_path = tmp_dir.path().join("config.toml");
+        let mut toml_file = std::fs::File::create(&toml_path).unwrap();
+        write!(
+            toml_file,
+            r#"
+[pipeline]
+name = "toml-ext-test"
+
+[[sources]]
+type = "local"
+path = "./data"
+patterns = ["*.xml"]
+
+[query]
+query = "SELECT * WHERE {{ ?s ?p ?o }} LIMIT 10"
+
+[output]
+dir = "./out"
+formats = ["csv"]
+"#
+        )
+        .unwrap();
+
+        // YAML config
+        let yaml_path = tmp_dir.path().join("config.yaml");
+        let mut yaml_file = std::fs::File::create(&yaml_path).unwrap();
+        write!(
+            yaml_file,
+            r#"
+pipeline:
+  name: "yaml-ext-test"
+sources:
+  - type: local
+    path: "./data"
+    patterns: ["*.xml"]
+query:
+  query: "SELECT * WHERE {{ ?s ?p ?o }} LIMIT 10"
+output:
+  dir: "./out"
+  formats: ["csv"]
+"#
+        )
+        .unwrap();
+
+        // JSON config
+        let json_path = tmp_dir.path().join("config.json");
+        let mut json_file = std::fs::File::create(&json_path).unwrap();
+        write!(
+            json_file,
+            r#"{{
+  "pipeline": {{ "name": "json-ext-test" }},
+  "sources": [{{ "type": "local", "path": "./data", "patterns": ["*.xml"] }}],
+  "query": {{ "query": "SELECT * WHERE {{ ?s ?p ?o }} LIMIT 10" }},
+  "output": {{ "dir": "./out", "formats": ["csv"] }}
+}}"#
+        )
+        .unwrap();
+
+        let toml_config = PipelineConfig::from_file(&toml_path).unwrap();
+        assert_eq!(toml_config.pipeline.name, "toml-ext-test");
+
+        let yaml_config = PipelineConfig::from_file(&yaml_path).unwrap();
+        assert_eq!(yaml_config.pipeline.name, "yaml-ext-test");
+
+        let json_config = PipelineConfig::from_file(&json_path).unwrap();
+        assert_eq!(json_config.pipeline.name, "json-ext-test");
+    }
 }

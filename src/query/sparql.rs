@@ -240,3 +240,135 @@ impl QueryEngine for SparqlEngine {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bytes::Bytes;
+    use oxigraph::model::{BlankNode, Literal, NamedNode};
+
+    const TEST_RDF_XML: &str = r#"<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:ex="http://example.org/">
+  <rdf:Description rdf:about="http://example.org/thing1">
+    <ex:name>Thing One</ex:name>
+  </rdf:Description>
+</rdf:RDF>"#;
+
+    fn test_rdf_file() -> ProcessedFile {
+        ProcessedFile {
+            path: "test.rdf".to_string(),
+            filename: "test.rdf".to_string(),
+            content: Bytes::from(TEST_RDF_XML),
+            source: "test".to_string(),
+        }
+    }
+
+    fn query_config(query: &str) -> QueryConfig {
+        QueryConfig {
+            file: None,
+            query: Some(query.to_string()),
+            base_iri: "http://example.org/".to_string(),
+        }
+    }
+
+    #[test]
+    fn test_format_term_named_node() {
+        let term = Term::NamedNode(NamedNode::new_unchecked("http://example.org/test"));
+        assert_eq!(format_term(&term), "http://example.org/test");
+    }
+
+    #[test]
+    fn test_format_term_blank_node() {
+        let term = Term::BlankNode(BlankNode::new_unchecked("b0"));
+        assert_eq!(format_term(&term), "_:b0");
+    }
+
+    #[test]
+    fn test_format_term_literal() {
+        let term = Term::Literal(Literal::new_simple_literal("hello"));
+        assert_eq!(format_term(&term), "hello");
+    }
+
+    #[test]
+    fn test_select_query() {
+        let engine = SparqlEngine::default();
+        let files = vec![test_rdf_file()];
+        let config = query_config("SELECT ?s ?o WHERE { ?s <http://example.org/name> ?o }");
+
+        let output = engine
+            .execute(files, &config)
+            .expect("query should succeed");
+
+        match &output.results {
+            QueryResultsData::Solutions { variables, rows: _ } => {
+                assert!(variables.contains(&"s".to_string()));
+                assert!(variables.contains(&"o".to_string()));
+            }
+            _ => panic!("Expected Solutions variant"),
+        }
+        assert!(output.count >= 1);
+        assert_eq!(output.files_loaded, 1);
+        assert!(output.triples_loaded >= 1);
+    }
+
+    #[test]
+    fn test_ask_query() {
+        let engine = SparqlEngine::default();
+        let files = vec![test_rdf_file()];
+        let config = query_config("ASK { ?s <http://example.org/name> ?o }");
+
+        let output = engine
+            .execute(files, &config)
+            .expect("query should succeed");
+
+        match &output.results {
+            QueryResultsData::Boolean(val) => assert!(val, "ASK should return true"),
+            _ => panic!("Expected Boolean variant"),
+        }
+    }
+
+    #[test]
+    fn test_construct_query() {
+        let engine = SparqlEngine::default();
+        let files = vec![test_rdf_file()];
+        let config = query_config(
+            "CONSTRUCT { ?s <http://example.org/name> ?o } WHERE { ?s <http://example.org/name> ?o }",
+        );
+
+        let output = engine
+            .execute(files, &config)
+            .expect("query should succeed");
+
+        match &output.results {
+            QueryResultsData::Graph { triples } => {
+                assert!(!triples.is_empty(), "Graph should contain triples");
+            }
+            _ => panic!("Expected Graph variant"),
+        }
+    }
+
+    #[test]
+    fn test_invalid_sparql_query() {
+        let engine = SparqlEngine::default();
+        let files = vec![test_rdf_file()];
+        let config = query_config("NOT VALID SPARQL");
+
+        let result = engine.execute(files, &config);
+        assert!(result.is_err(), "Invalid SPARQL should return Err");
+    }
+
+    #[test]
+    fn test_invalid_rdf_data() {
+        let engine = SparqlEngine::default();
+        let files = vec![ProcessedFile {
+            path: "bad.xml".to_string(),
+            filename: "bad.xml".to_string(),
+            content: Bytes::from("not xml at all"),
+            source: "test".to_string(),
+        }];
+        let config = query_config("SELECT ?s ?p ?o WHERE { ?s ?p ?o }");
+
+        let result = engine.execute(files, &config);
+        assert!(result.is_err(), "Invalid RDF data should return Err");
+    }
+}

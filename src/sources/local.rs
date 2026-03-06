@@ -207,3 +207,80 @@ impl Source for LocalSource {
         &self.name
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::Write;
+    use tempfile::TempDir;
+
+    fn make_config(path: &str, patterns: Vec<&str>, recursive: bool) -> LocalSourceConfig {
+        LocalSourceConfig {
+            path: path.to_string(),
+            files: vec![],
+            patterns: patterns.into_iter().map(|s| s.to_string()).collect(),
+            recursive,
+        }
+    }
+
+    #[tokio::test]
+    async fn test_fetch_files_from_temp_dir() {
+        let tmp = TempDir::new().unwrap();
+        for name in &["a.xml", "b.xml", "c.txt"] {
+            let mut f = std::fs::File::create(tmp.path().join(name)).unwrap();
+            f.write_all(b"data").unwrap();
+        }
+
+        let source = LocalSource::new(make_config(
+            tmp.path().to_str().unwrap(),
+            vec!["*.xml"],
+            false,
+        ));
+        let result = source.fetch().await.unwrap();
+        assert_eq!(result.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_fetch_recursive() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::File::create(tmp.path().join("root.xml"))
+            .unwrap()
+            .write_all(b"data")
+            .unwrap();
+
+        let sub = tmp.path().join("subdir");
+        std::fs::create_dir(&sub).unwrap();
+        std::fs::File::create(sub.join("nested.xml"))
+            .unwrap()
+            .write_all(b"data")
+            .unwrap();
+
+        let source = LocalSource::new(make_config(
+            tmp.path().to_str().unwrap(),
+            vec!["*.xml"],
+            true,
+        ));
+        let result = source.fetch().await.unwrap();
+        assert_eq!(result.len(), 2);
+    }
+
+    #[tokio::test]
+    async fn test_nonexistent_path_returns_error() {
+        let source = LocalSource::new(make_config("/nonexistent/path/xyz", vec![], false));
+        let result = source.fetch().await;
+        assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_empty_patterns_matches_all() {
+        let tmp = TempDir::new().unwrap();
+        for name in &["a.xml", "b.txt", "c.rdf"] {
+            let mut f = std::fs::File::create(tmp.path().join(name)).unwrap();
+            f.write_all(b"data").unwrap();
+        }
+
+        let source = LocalSource::new(make_config(tmp.path().to_str().unwrap(), vec![], false));
+        let result = source.fetch().await.unwrap();
+        assert_eq!(result.len(), 3);
+    }
+}
