@@ -26,7 +26,7 @@ object_store = { version = "0.11", features = ["aws", "azure", "gcp"] }
 
 # Configuration
 serde = { version = "1", features = ["derive"] }
-toml = "0.8"
+toml = "1.0"
 serde_yaml = "0.9"
 serde_json = "1"
 
