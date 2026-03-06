@@ -78,6 +78,11 @@ docker run --rm \
 
 ### 1. Write a config file
 
+Format is auto-detected from the file extension — pick whichever you prefer:
+
+<details>
+<summary>TOML (pipeline.toml)</summary>
+
 ```toml
 [pipeline]
 name = "my-query"
@@ -95,10 +100,63 @@ dir = "./output"
 formats = ["csv"]
 ```
 
+</details>
+
+<details>
+<summary>YAML (pipeline.yaml)</summary>
+
+```yaml
+pipeline:
+  name: my-query
+
+sources:
+  - type: local
+    path: ./examples/data
+    patterns:
+      - "*.xml"
+
+query:
+  file: ./examples/queries/query.sparql
+
+output:
+  dir: ./output
+  formats:
+    - csv
+```
+
+</details>
+
+<details>
+<summary>JSON (pipeline.json)</summary>
+
+```json
+{
+  "pipeline": {
+    "name": "my-query"
+  },
+  "sources": [
+    {
+      "type": "local",
+      "path": "./examples/data",
+      "patterns": ["*.xml"]
+    }
+  ],
+  "query": {
+    "file": "./examples/queries/query.sparql"
+  },
+  "output": {
+    "dir": "./output",
+    "formats": ["csv"]
+  }
+}
+```
+
+</details>
+
 ### 2. Run it
 
 ```bash
-cimishi query --config pipeline.toml
+cimishi query --config pipeline.toml   # or .yaml / .json
 ```
 
 ### 3. Check the output
@@ -112,7 +170,7 @@ cimishi query --config pipeline.toml
 2026-03-04T12:00:01Z  INFO CSV written to: output/results_20260304_120001.csv
 ```
 
-Add `--verbose` for debug logging. Configs can be TOML, YAML, or JSON — format is auto-detected from the file extension.
+Add `--verbose` for debug logging.
 
 ---
 
