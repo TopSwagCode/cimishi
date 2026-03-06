@@ -66,10 +66,7 @@ pub async fn load_blueprint(source: &str) -> anyhow::Result<BlueprintConfig> {
 
 /// Download all files listed in a blueprint to the appropriate `.cimishi/` directories.
 pub async fn download_blueprint(config: BlueprintConfig) -> anyhow::Result<()> {
-    println!(
-        "\nInstalling blueprint: {}",
-        config.blueprint.name
-    );
+    println!("\nInstalling blueprint: {}", config.blueprint.name);
     if let Some(ref desc) = config.blueprint.description {
         println!("  {}", desc);
     }
@@ -109,7 +106,10 @@ pub async fn download_blueprint(config: BlueprintConfig) -> anyhow::Result<()> {
         println!("\n--- Run it ---");
         for file in &config.configs {
             let name = file.resolved_filename();
-            println!("  cimishi query --config {}", config_dir.join(&name).display());
+            println!(
+                "  cimishi query --config {}",
+                config_dir.join(&name).display()
+            );
         }
         println!();
     }

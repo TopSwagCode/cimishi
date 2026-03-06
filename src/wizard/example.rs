@@ -123,7 +123,11 @@ pub async fn download_example() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(super) async fn download_file(client: &reqwest::Client, url: &str, dest: &PathBuf) -> anyhow::Result<()> {
+pub(super) async fn download_file(
+    client: &reqwest::Client,
+    url: &str,
+    dest: &PathBuf,
+) -> anyhow::Result<()> {
     if let Some(parent) = dest.parent() {
         fs::create_dir_all(parent)?;
     }
