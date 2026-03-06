@@ -22,7 +22,7 @@ async-trait = "0.1"
 futures = "0.3"
 
 # Cloud storage (S3, Azure, GCS, local)
-object_store = { version = "0.11", features = ["aws", "azure", "gcp"] }
+object_store = { version = "0.13", features = ["aws", "azure", "gcp"] }
 
 # Configuration
 serde = { version = "1", features = ["derive"] }
