@@ -19,7 +19,12 @@ pub async fn run_wizard() -> anyhow::Result<()> {
     println!("\nCimishi — Config Wizard\n");
 
     // Step 1: Config type
-    let config_types = &["query", "compare", "download query example (quick start)"];
+    let config_types = &[
+        "query",
+        "compare",
+        "install from blueprint",
+        "download query example (quick start)",
+    ];
     let config_type_idx = Select::new()
         .with_prompt("What would you like to do?")
         .items(config_types)
@@ -27,6 +32,14 @@ pub async fn run_wizard() -> anyhow::Result<()> {
         .interact()?;
 
     if config_type_idx == 2 {
+        let source: String = Input::new()
+            .with_prompt("Path or URL to blueprint file")
+            .interact_text()?;
+        let config = super::blueprint::load_blueprint(&source).await?;
+        return super::blueprint::download_blueprint(config).await;
+    }
+
+    if config_type_idx == 3 {
         return super::example::download_example().await;
     }
 

@@ -1,5 +1,5 @@
 use console::Term;
-use dialoguer::Select;
+use dialoguer::{Input, Select};
 use tracing_subscriber::{fmt, EnvFilter};
 
 use super::runner;
@@ -20,6 +20,7 @@ pub async fn run_interactive_menu() -> anyhow::Result<()> {
 
     let menu_items = &[
         "Run a saved query config",
+        "Install from blueprint",
         "Compare (coming soon)",
         "Create new config (init)",
         "Exit",
@@ -33,18 +34,29 @@ pub async fn run_interactive_menu() -> anyhow::Result<()> {
 
     match selection {
         0 => run_saved_config().await?,
-        1 => {
+        1 => install_from_blueprint().await?,
+        2 => {
             println!("\nCompare is not yet implemented. Stay tuned!");
         }
-        2 => {
+        3 => {
             wizard::flow::run_wizard().await?;
         }
-        3 => {
+        4 => {
             println!("Goodbye!");
         }
         _ => unreachable!(),
     }
 
+    Ok(())
+}
+
+async fn install_from_blueprint() -> anyhow::Result<()> {
+    let source: String = Input::new()
+        .with_prompt("Path or URL to blueprint file")
+        .interact_text()?;
+
+    let config = wizard::blueprint::load_blueprint(&source).await?;
+    wizard::blueprint::download_blueprint(config).await?;
     Ok(())
 }
 

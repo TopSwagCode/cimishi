@@ -40,6 +40,13 @@ enum Commands {
         download_example: bool,
     },
 
+    /// Download files from a blueprint (local file or URL).
+    Blueprint {
+        /// Path or URL to the blueprint file (TOML/YAML/JSON).
+        #[arg(short, long)]
+        source: String,
+    },
+
     /// Show resolved config, query, and data directory paths.
     Paths,
 }
@@ -84,6 +91,10 @@ async fn main() -> anyhow::Result<()> {
             } else {
                 cimishi::wizard::flow::run_wizard().await?;
             }
+        }
+        Some(Commands::Blueprint { source }) => {
+            let config = cimishi::wizard::blueprint::load_blueprint(&source).await?;
+            cimishi::wizard::blueprint::download_blueprint(config).await?;
         }
         Some(Commands::Paths) => {
             cimishi::paths::print_paths();

@@ -1,0 +1,15 @@
+blueprint:
+  name: example-project
+  description: "Downloads the cimishi example project (config, query, and sample data) — ready to run"
+
+configs:
+  - url: "https://raw.githubusercontent.com/TopSwagCode/cimishi/refs/heads/master/examples/configs/pipeline-blueprint.json"
+    filename: example-pipeline.json
+
+queries:
+  - url: "https://raw.githubusercontent.com/TopSwagCode/cimishi/refs/heads/master/examples/queries/query.sparql"
+    filename: example-query.sparql
+
+data:
+  - url: "https://raw.githubusercontent.com/TopSwagCode/cimishi/refs/heads/master/examples/data/SampleData.zip"
+    filename: example-data.zip

@@ -80,6 +80,52 @@ $ cargo run -- --config examples/configs/pipeline-local.toml
 
 ---
 
+## Blueprints
+
+A blueprint is a manifest file (TOML, YAML, or JSON) that lists configs, queries, and data files to download. Point at a blueprint and everything gets installed to `.cimishi/` — ready to run.
+
+### Install from a blueprint
+
+```bash
+# From a local file
+cimishi blueprint --source examples/blueprints/example-blueprint.toml
+
+# From a URL
+cimishi blueprint --source https://example.com/my-blueprint.toml
+```
+
+Blueprints are also available from the interactive menu (`cimishi` with no arguments) and the init wizard (`cimishi init`).
+
+### Blueprint format
+
+```toml
+[blueprint]
+name = "my-setup"
+description = "Optional description"
+
+[[configs]]
+url = "https://example.com/pipeline.toml"
+filename = "my-pipeline.toml"  # optional, defaults to URL filename
+
+[[queries]]
+url = "https://example.com/query.sparql"
+
+[[data]]
+url = "https://example.com/data.zip"
+```
+
+All three sections (`configs`, `queries`, `data`) are optional. Files download to:
+
+| Section | Directory |
+|---------|-----------|
+| `configs` | `.cimishi/config/` |
+| `queries` | `.cimishi/query/` |
+| `data` | `.cimishi/data/` |
+
+See `examples/blueprints/` for ready-made examples in all three formats.
+
+---
+
 ## Configuration
 
 Configs can be TOML, YAML, or JSON — format is auto-detected from the file extension. See `examples/configs/` for ready-made configs.
