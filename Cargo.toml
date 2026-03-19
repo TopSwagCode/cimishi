@@ -45,7 +45,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 # Archive handling
 async-compression = { version = "0.4", features = ["tokio", "gzip", "zstd"] }
-async_zip = { version = "0.0.17", features = ["tokio", "deflate"] }
+async_zip = { version = "0.0.18", features = ["tokio", "deflate"] }
 
 # HTTP (for downloading examples)
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
